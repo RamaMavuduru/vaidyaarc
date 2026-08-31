@@ -4,6 +4,112 @@ from app.red_flag_rules import evaluate_red_flags as evaluate_red_flag_rules
 from app.state import VaidyaArcState
 from app.schemas import IntakeResult
 
+# Complaint-specific information requirements
+# Maps chief_complaint keywords to required fields for adaptive intake
+COMPLAINT_REQUIREMENTS = {
+    "pain": {
+        "required_fields": ["chief_complaint", "nature_of_pain", "location", "duration", "severity"],
+        "optional_fields": ["associated_symptoms"],
+        "category": "pain-like"
+    },
+    "stomach pain": {
+        "required_fields": ["chief_complaint", "nature_of_pain", "location", "duration", "severity"],
+        "optional_fields": ["associated_symptoms"],
+        "category": "pain-like"
+    },
+    "abdominal pain": {
+        "required_fields": ["chief_complaint", "nature_of_pain", "location", "duration", "severity"],
+        "optional_fields": ["associated_symptoms"],
+        "category": "pain-like"
+    },
+    "headache": {
+        "required_fields": ["chief_complaint", "duration", "severity", "location"],
+        "optional_fields": ["associated_symptoms"],
+        "category": "pain-like"
+    },
+    "fever": {
+        "required_fields": ["chief_complaint", "duration", "severity"],
+        "optional_fields": ["associated_symptoms"],
+        "category": "systemic"
+    },
+    "cough": {
+        "required_fields": ["chief_complaint", "duration"],
+        "optional_fields": ["associated_symptoms"],
+        "category": "respiratory"
+    },
+    "nausea": {
+        "required_fields": ["chief_complaint", "duration"],
+        "optional_fields": ["associated_symptoms"],
+        "category": "gastrointestinal"
+    },
+    "vomiting": {
+        "required_fields": ["chief_complaint", "duration"],
+        "optional_fields": ["associated_symptoms"],
+        "category": "gastrointestinal"
+    },
+}
+
+# Fallback for unknown complaints: collect minimal information
+FALLBACK_REQUIRED_FIELDS = ["chief_complaint", "duration", "severity"]
+
+# Complaint-specific question templates
+# Maps field names to complaint-specific question text
+COMPLAINT_QUESTIONS = {
+    "fever": {
+        "chief_complaint": "What health problem are you experiencing?",
+        "duration": "When did the fever start?",
+        "severity": "How high is your fever or how severe is it?",
+    },
+    "cough": {
+        "chief_complaint": "What health problem are you experiencing?",
+        "duration": "When did the cough start?",
+    },
+    "headache": {
+        "chief_complaint": "What health problem are you experiencing?",
+        "duration": "When did the headache start?",
+        "severity": "How severe is the headache?",
+        "location": "Where exactly is the headache located?",
+    },
+    "nausea": {
+        "chief_complaint": "What health problem are you experiencing?",
+        "duration": "When did the nausea start?",
+    },
+    "vomiting": {
+        "chief_complaint": "What health problem are you experiencing?",
+        "duration": "When did the vomiting start?",
+    },
+    "pain": {
+        "chief_complaint": "What health problem are you experiencing?",
+        "nature_of_pain": "Can you describe what the pain feels like?",
+        "location": "Where exactly are you feeling the pain?",
+        "duration": "When did this problem start?",
+        "severity": "How severe is the pain?",
+    },
+    "stomach pain": {
+        "chief_complaint": "What health problem are you experiencing?",
+        "nature_of_pain": "Can you describe what the pain feels like?",
+        "location": "Where exactly are you feeling the pain?",
+        "duration": "When did this problem start?",
+        "severity": "How severe is the pain?",
+    },
+    "abdominal pain": {
+        "chief_complaint": "What health problem are you experiencing?",
+        "nature_of_pain": "Can you describe what the pain feels like?",
+        "location": "Where exactly are you feeling the pain?",
+        "duration": "When did this problem start?",
+        "severity": "How severe is the pain?",
+    },
+}
+
+# Default questions for generic fields
+DEFAULT_QUESTIONS = {
+    "chief_complaint": "What health problem are you experiencing?",
+    "nature_of_pain": "Can you describe what the feeling is like?",
+    "location": "Where exactly are you experiencing this?",
+    "duration": "When did this start?",
+    "severity": "How severe is this?",
+}
+
 model = ChatOllama(
     model="llama3:latest",
     temperature=0,
@@ -144,6 +250,29 @@ Return only the structured schema.
     return {
         "extracted_information": extracted
     }
+
+
+def _find_complaint_template(complaint_text: str) -> dict | None:
+    """
+    Match a chief_complaint string to a complaint template.
+    Searches for keywords in the complaint and returns the matching template.
+    """
+    if not complaint_text:
+        return None
+    
+    complaint_lower = complaint_text.lower().strip()
+    
+    # Exact match first
+    if complaint_lower in COMPLAINT_REQUIREMENTS:
+        return COMPLAINT_REQUIREMENTS[complaint_lower]
+    
+    # Substring matching for common variants
+    for template_key, template in COMPLAINT_REQUIREMENTS.items():
+        if template_key in complaint_lower or complaint_lower in template_key:
+            return template
+    
+    # No match found
+    return None
 
 
 def _normalize_blank(value):
@@ -414,28 +543,43 @@ def validate_patient_state(state: VaidyaArcState):
     if "information_complete" not in validated or validated["information_complete"] is None:
         validated["information_complete"] = False
 
+    if "questions_asked" not in validated or validated["questions_asked"] is None:
+        validated["questions_asked"] = []
+
     validated["extracted_information"] = {}
     return validated
 
 
 def determine_missing_information(state: VaidyaArcState):
     missing = []
-
-    required_fields = [
-        "chief_complaint",
-        "nature_of_pain",
-        "location",
-        "duration",
-        "severity"
-    ]
-
+    
+    complaint = state.get("chief_complaint")
+    
+    # If no complaint yet, we always need it first
+    if not complaint:
+        return {
+            "missing_information": ["chief_complaint"],
+            "information_complete": False
+        }
+    
+    # Find the template for this complaint
+    template = _find_complaint_template(complaint)
+    
+    if template:
+        required_fields = template["required_fields"]
+    else:
+        # Unknown complaint: use fallback with a clarification step
+        # For now, accept the chief_complaint as given and use fallback
+        required_fields = FALLBACK_REQUIRED_FIELDS
+    
+    # Check which fields are missing
     for field in required_fields:
         value = state.get(field)
         if value is None or value == "":
             missing.append(field)
-
+    
     information_complete = len(missing) == 0
-
+    
     return {
         "missing_information": missing,
         "information_complete": information_complete
@@ -444,24 +588,59 @@ def determine_missing_information(state: VaidyaArcState):
 
 def select_next_question(state: VaidyaArcState):
     missing = state.get("missing_information", [])
-
+    questions_asked = state.get("questions_asked", [])
+    complaint = state.get("chief_complaint")
+    
     if state.get("information_complete") or not missing:
         return {
             "next_question": None
         }
-
-    questions = {
-        "chief_complaint": "What health problem are you experiencing?",
-        "nature_of_pain": "Can you describe what the pain feels like?",
-        "location": "Where exactly are you feeling the pain?",
-        "duration": "When did this problem start?",
-        "severity": "How severe is the pain?"
-    }
-
-    next_question = questions.get(missing[0])
-
+    
+    # Find the first missing field that hasn't been asked yet
+    next_field = None
+    for field in missing:
+        if field not in questions_asked:
+            next_field = field
+            break
+    
+    if next_field is None:
+        # All missing fields have been asked but we're still incomplete
+        # This means patient gave non-answers; stop asking
+        return {
+            "next_question": None
+        }
+    
+    # Get complaint-specific questions if available
+    if complaint:
+        complaint_lower = complaint.lower()
+        # Try to find exact or partial match in COMPLAINT_QUESTIONS
+        questions_for_complaint = None
+        
+        # Exact match first
+        if complaint_lower in COMPLAINT_QUESTIONS:
+            questions_for_complaint = COMPLAINT_QUESTIONS[complaint_lower]
+        else:
+            # Substring matching
+            for template_key, template_qs in COMPLAINT_QUESTIONS.items():
+                if template_key in complaint_lower or complaint_lower in template_key:
+                    questions_for_complaint = template_qs
+                    break
+        
+        if questions_for_complaint and next_field in questions_for_complaint:
+            next_question = questions_for_complaint[next_field]
+        else:
+            # Fall back to default question
+            next_question = DEFAULT_QUESTIONS.get(next_field, "Can you provide more information about this?")
+    else:
+        # No complaint yet, use default
+        next_question = DEFAULT_QUESTIONS.get(next_field, "Can you provide more information?")
+    
+    # Track that we're asking this field
+    updated_questions_asked = list(questions_asked) + [next_field]
+    
     return {
-        "next_question": next_question
+        "next_question": next_question,
+        "questions_asked": updated_questions_asked
     }
 
 

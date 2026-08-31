@@ -31,6 +31,7 @@ class VaidyaArcState(TypedDict, total=False):
     missing_information: list[str]
     next_question: Optional[str]
     information_complete: bool
+    questions_asked: list[str]
 
     # Patient-facing response
     conversation_message: Optional[str]

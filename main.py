@@ -25,6 +25,7 @@ def create_fresh_case_state():
         "next_question": None,
         "missing_information": [],
         "information_complete": False,
+        "questions_asked": [],
     }
 
 
