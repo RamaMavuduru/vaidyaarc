@@ -280,6 +280,143 @@ def test_red_flags_regression():
     return True
 
 
+def test_duration_no_duplicate_question_on_validated_state():
+    """Regression for duration being re-asked after it was already merged into state."""
+    from app.nodes import select_next_question
+
+    state = create_fresh_state()
+    state["chief_complaint"] = "severe chest pain"
+    state["severity"] = "very severe and worsening"
+    state["duration"] = "since this morning"
+    state["nature_of_pain"] = None
+    state["missing_information"] = ["nature_of_pain"]
+    state["questions_asked"] = ["nature_of_pain", "duration"]
+    state["information_complete"] = False
+
+    result = select_next_question(state)
+    next_question = result.get("next_question")
+    print("\n" + "="*70)
+    print("TEST G: DURATION DUPLICATE QUESTION REGRESSION")
+    print("="*70)
+    print(f"State duration: {state.get('duration')}")
+    print(f"Missing info: {state.get('missing_information')}")
+    print(f"Selected next question: {next_question}")
+    print(f"Questions asked: {result.get('questions_asked')}")
+
+    assert state.get("duration") == "since this morning", "Duration must already be merged"
+    assert "duration" not in state.get("missing_information", []), "Duration must disappear from missing information"
+    assert next_question is None or "when did" not in (next_question or "").lower(), "Duration question must not be re-asked"
+
+    print("\n[PASS] DURATION DUPLICATE QUESTION REGRESSION PASSED")
+    return True
+
+
+def test_duration_variants_and_fever_case():
+    """Verify duration extraction holds for several standard temporal phrases."""
+    from app.nodes import intake_brain
+
+    phrases = [
+        ("When did this problem start?", "since this morning", "since this morning"),
+        ("When did this problem start?", "1 day ago", "1 day ago"),
+        ("When did this problem start?", "yesterday", "yesterday"),
+        ("When did this problem start?", "for 7 days", "for 7 days"),
+    ]
+
+    print("\n" + "="*70)
+    print("TEST H: DURATION EXTRACTION VARIANTS")
+    print("="*70)
+
+    for previous_question, message, expected in phrases:
+        state = create_fresh_state()
+        state["current_message"] = message
+        state["conversation_message"] = previous_question
+        result = intake_brain(state)
+        extracted = result.get("extracted_information", {})
+        print(f"Previous: {previous_question} | Message: {message} | Extracted: {extracted}")
+        assert extracted.get("duration") == expected, f"Expected duration '{expected}' but got {extracted.get('duration')}"
+
+    fever_state = create_fresh_state()
+    fever_state["current_message"] = "I have severe fever for 7 days"
+    fever_state["conversation_message"] = None
+    fever_result = intake_brain(fever_state)
+    extracted = fever_result.get("extracted_information", {})
+    print(f"Severe fever extraction: {extracted}")
+    assert extracted.get("chief_complaint") in {"severe fever", "fever"}, "Severe fever complaint should be recognized"
+    assert extracted.get("duration") == "7 days", "7-day duration should be preserved"
+
+    print("\n[PASS] DURATION EXTRACTION VARIANTS PASSED")
+    return True
+
+
+def test_duration_normalizes_severe_fever_since_7_days():
+    """Regression: duration should exclude the complaint and surrounding phrasing."""
+    from app.nodes import intake_brain
+
+    print("\n" + "="*70)
+    print("TEST J: DURATION NORMALIZATION - SEVERE FEVER SINCE 7 DAYS")
+    print("="*70)
+
+    state = create_fresh_state()
+    state["current_message"] = "I have severe fever since 7 days"
+    state["conversation_message"] = None
+    result = intake_brain(state)
+    extracted = result.get("extracted_information", {})
+
+    print(f"Extracted: {extracted}")
+    assert extracted.get("chief_complaint") == "severe fever", "Complaint should remain 'severe fever'"
+    assert extracted.get("duration") == "7 days", "Duration should be normalized to just '7 days'"
+
+    print("\n[PASS] DURATION NORMALIZATION - SEVERE FEVER SINCE 7 DAYS PASSED")
+    return True
+
+
+def test_severe_fever_worsening_and_completion_gate():
+    """Regression test for severe fever + rapidly worsening requiring severity follow-up and preserving evidence."""
+    from app.red_flag_rules import evaluate_red_flags
+    from app.workflow import build_vaidyaarc_graph
+
+    print("\n" + "="*70)
+    print("TEST I: SEVERE FEVER + RAPID WORSENING + COMPLETION GATE")
+    print("="*70)
+
+    state = create_fresh_state()
+    state["current_message"] = "I have severe fever from 7 days and it is rapidly worsening"
+    graph = build_vaidyaarc_graph()
+    result = graph.invoke(state)
+    state.update(result)
+
+    print(f"State current_message: {state.get('current_message')}")
+    print(f"Chief complaint: {state.get('chief_complaint')}")
+    print(f"Duration: {state.get('duration')}")
+    print(f"Severity: {state.get('severity')}")
+    print(f"Missing Information: {state.get('missing_information')}")
+    print(f"Information Complete: {state.get('information_complete')}")
+    print(f"Conversation Message: {state.get('conversation_message')}")
+
+    assert state.get("chief_complaint") in {"severe fever", "fever"}, "Severe fever should be recognized"
+    assert state.get("duration") == "7 days", "7-day duration should be preserved"
+    assert state.get("severity") in {"severe", "very severe"}, "Explicit severity should be preserved from the patient message"
+    assert state.get("missing_information") == [], "When severity is explicit, no missing fields should remain"
+    assert state.get("information_complete") is True, "Intake should complete when all required fields are actually present"
+    assert "Thank you. I have collected" in (state.get("conversation_message") or ""), "Completion should be allowed once required information is complete"
+
+    eval_state = {
+        "chief_complaint": "severe fever",
+        "duration": "7 days",
+        "severity": "severe",
+        "associated_symptoms": [],
+        "current_message": "I have severe fever from 7 days and it is rapidly worsening",
+        "information_complete": True,
+    }
+    red_flag_result = evaluate_red_flags(eval_state)
+    print(f"Red flag result: {red_flag_result}")
+    assert red_flag_result.get("red_flag_status") == "red_flags_detected", "Rapid worsening + severe should trigger red-flag rule"
+    assert "rapidly worsening severe symptoms" in red_flag_result.get("red_flags", []), "Rapid worsening severe symptoms rule should fire"
+
+    print("\n[PASS] SEVERE FEVER + RAPID WORSENING + COMPLETION GATE PASSED")
+    return True
+
+
 def main():
     """Run all tests."""
     print("\n" + "="*70)
@@ -293,6 +430,10 @@ def main():
         ("Test D: Headache", test_headache),
         ("Test E: Duplicate Prevention", test_duplicate_prevention),
         ("Test F: Red Flag Regression", test_red_flags_regression),
+        ("Test G: Duration Duplicate Prevention", test_duration_no_duplicate_question_on_validated_state),
+        ("Test H: Duration Extraction Variants", test_duration_variants_and_fever_case),
+        ("Test I: Severe Fever + Rapid Worsening + Completion Gate", test_severe_fever_worsening_and_completion_gate),
+        ("Test J: Duration Normalization - Severe Fever Since 7 Days", test_duration_normalizes_severe_fever_since_7_days),
     ]
     
     results = []

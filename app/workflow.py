@@ -1,5 +1,6 @@
 from langgraph.graph import StateGraph, START, END
 
+from app.red_flag_rules import evaluate_red_flags as evaluate_red_flag_rules
 from app.state import VaidyaArcState
 
 from app.nodes import (
@@ -9,15 +10,15 @@ from app.nodes import (
     determine_missing_information,
     select_next_question,
     ask_next_question,
-    evaluate_red_flags
+    evaluate_red_flags,
+    risk_convergence,
 )
 
 
 def route_after_missing_check(state: VaidyaArcState):
-
-    if state.get("information_complete"):
+    missing = state.get("missing_information") or []
+    if state.get("information_complete") and not missing:
         return "complete"
-
     return "need_more_info"
 
 
@@ -32,6 +33,7 @@ def build_vaidyaarc_graph():
     builder.add_node("select_next_question", select_next_question)
     builder.add_node("ask_next_question", ask_next_question)
     builder.add_node("evaluate_red_flags", evaluate_red_flags)
+    builder.add_node("risk_convergence", risk_convergence)
 
     builder.add_edge(START, "intake_brain")
     builder.add_edge("intake_brain", "merge_intake_information")
@@ -49,7 +51,8 @@ def build_vaidyaarc_graph():
 
     builder.add_edge("select_next_question", "ask_next_question")
     builder.add_edge("ask_next_question", END)
-    builder.add_edge("evaluate_red_flags", END)
+    builder.add_edge("evaluate_red_flags", "risk_convergence")
+    builder.add_edge("risk_convergence", END)
 
     graph = builder.compile()
 

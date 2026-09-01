@@ -48,6 +48,20 @@ class VaidyaArcState(TypedDict, total=False):
     risk_factors: list[str]
     risk_convergence_factors: list[str]
 
+    # Phase 2B: Risk Convergence Engine
+    risk_level: Optional[str]
+    risk_score: Optional[int]
+    risk_signal_summary: list[str]
+    risk_contributing_factors: list[str]
+    risk_evidence: list[str]
+    risk_reasoning: Optional[str]
+    risk_override_reason: Optional[str]
+    recommended_next_action: Optional[str]
+    risk_rule_hits: list[dict[str, Any]]
+    convergence_status: Optional[str]
+    risk_context_flags: list[str]
+    risk_assessment_version: Optional[str]
+
     # Future outputs
     recommendations: list[str]
     physician_report: Optional[str]
