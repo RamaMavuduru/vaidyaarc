@@ -202,3 +202,20 @@ while True:
         print("Case Summary:", clinical_case.get("case_summary"))
         print("Next Steps:", clinical_case.get("next_steps"))
         print("Case Ready for Review:", clinical_case_output.get("case_ready_for_review"))
+
+        print("\n" + "=" * 60)
+        print("PHASE 4: CARE NAVIGATION & FACILITY MATCHING")
+        print("=" * 60)
+        print("Care Navigation Status:", state.get("care_navigation_status"))
+        print("Navigation Explanation:", state.get("navigation_explanation"))
+        print("Navigation Data Source:", state.get("navigation_source"))
+        matched_facilities = state.get("matched_facilities") or []
+        print(f"Matched Facilities Count: {len(matched_facilities)}")
+        for idx, match in enumerate(matched_facilities[:3], start=1):
+            fac = match.get("facility", {})
+            dist = match.get("distance_km")
+            dist_str = f"{dist:.1f} km" if dist is not None else "N/A"
+            print(f"  {idx}. {fac.get('facility_name')} ({fac.get('facility_type')})")
+            print(f"     Match Score: {match.get('match_score')}/100 [{match.get('match_tier')}] | Distance: {dist_str}")
+            print(f"     Emergency Services: {fac.get('emergency_services')} | Verification: {fac.get('verification_status')}")
+            print(f"     Summary: {match.get('match_summary')}")

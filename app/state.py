@@ -68,6 +68,14 @@ class VaidyaArcState(TypedDict, total=False):
     case_generation_status: Optional[str]
     case_validation_errors: list[str]
 
+    # Phase 4: Care Navigation & Facility Matching
+    patient_location: Optional[dict[str, Any]]
+    care_navigation_status: Optional[str]
+    matched_facilities: list[dict[str, Any]]
+    navigation_explanation: Optional[str]
+    navigation_source: Optional[str]
+    care_navigation_output: Optional[dict[str, Any]]
+
     # Future outputs
     recommendations: list[str]
     physician_report: Optional[str]
