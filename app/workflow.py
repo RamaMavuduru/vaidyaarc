@@ -13,6 +13,7 @@ from app.nodes import (
     evaluate_red_flags,
     risk_convergence,
 )
+from app.clinical_case_node import clinical_case_representation
 
 
 def route_after_missing_check(state: VaidyaArcState):
@@ -34,6 +35,7 @@ def build_vaidyaarc_graph():
     builder.add_node("ask_next_question", ask_next_question)
     builder.add_node("evaluate_red_flags", evaluate_red_flags)
     builder.add_node("risk_convergence", risk_convergence)
+    builder.add_node("clinical_case_representation", clinical_case_representation)
 
     builder.add_edge(START, "intake_brain")
     builder.add_edge("intake_brain", "merge_intake_information")
@@ -52,7 +54,8 @@ def build_vaidyaarc_graph():
     builder.add_edge("select_next_question", "ask_next_question")
     builder.add_edge("ask_next_question", END)
     builder.add_edge("evaluate_red_flags", "risk_convergence")
-    builder.add_edge("risk_convergence", END)
+    builder.add_edge("risk_convergence", "clinical_case_representation")
+    builder.add_edge("clinical_case_representation", END)
 
     graph = builder.compile()
 

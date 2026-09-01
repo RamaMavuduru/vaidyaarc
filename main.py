@@ -180,3 +180,25 @@ while True:
             "Red Flag Rule Hits:",
             state.get("red_flag_rule_hits")
         )
+
+        print("\n" + "=" * 60)
+        print("PHASE 2B: RISK CONVERGENCE")
+        print("=" * 60)
+        print("Risk Level:", state.get("risk_level"))
+        print("Risk Score:", state.get("risk_score"))
+        print("Risk Contributing Factors:", state.get("risk_contributing_factors"))
+        print("Risk Reasoning:", state.get("risk_reasoning"))
+        print("Recommended Next Action:", state.get("recommended_next_action"))
+
+        print("\n" + "=" * 60)
+        print("PHASE 3: CLINICAL CASE REPRESENTATION")
+        print("=" * 60)
+        print("Case Generation Status:", state.get("case_generation_status"))
+        clinical_case = state.get("clinical_case") or {}
+        clinical_case_output = state.get("clinical_case_output") or {}
+        print("Care Pathway Status:", clinical_case.get("care_pathway_status"))
+        data_quality = clinical_case.get("data_quality") or {}
+        print("Completeness Percentage:", f"{data_quality.get('completeness_percentage', 0.0)}%")
+        print("Case Summary:", clinical_case.get("case_summary"))
+        print("Next Steps:", clinical_case.get("next_steps"))
+        print("Case Ready for Review:", clinical_case_output.get("case_ready_for_review"))

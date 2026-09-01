@@ -62,6 +62,12 @@ class VaidyaArcState(TypedDict, total=False):
     risk_context_flags: list[str]
     risk_assessment_version: Optional[str]
 
+    # Phase 3: Clinical Case Representation
+    clinical_case: Optional[dict[str, Any]]
+    clinical_case_output: Optional[dict[str, Any]]
+    case_generation_status: Optional[str]
+    case_validation_errors: list[str]
+
     # Future outputs
     recommendations: list[str]
     physician_report: Optional[str]
