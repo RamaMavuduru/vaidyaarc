@@ -76,6 +76,17 @@ class VaidyaArcState(TypedDict, total=False):
     navigation_source: Optional[str]
     care_navigation_output: Optional[dict[str, Any]]
 
+    # Phase 5: Follow-up & Patient Monitoring Intelligence
+    previous_case_state: Optional[dict[str, Any]]
+    follow_up_output: Optional[dict[str, Any]]
+    monitoring_status: Optional[str]
+    patient_trajectory: Optional[str]
+    risk_trend: Optional[str]
+    new_signals: list[str]
+    resolved_signals: list[str]
+    next_monitoring_action: Optional[str]
+    monitoring_explanation: Optional[str]
+
     # Future outputs
     recommendations: list[str]
-    physician_report: Optional[str]
+    physician_report: Optional[str]

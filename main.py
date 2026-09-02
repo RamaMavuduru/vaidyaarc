@@ -219,3 +219,15 @@ while True:
             print(f"     Match Score: {match.get('match_score')}/100 [{match.get('match_tier')}] | Distance: {dist_str}")
             print(f"     Emergency Services: {fac.get('emergency_services')} | Verification: {fac.get('verification_status')}")
             print(f"     Summary: {match.get('match_summary')}")
+
+        if state.get("monitoring_status"):
+            print("\n" + "=" * 60)
+            print("PHASE 5: FOLLOW-UP & PATIENT MONITORING")
+            print("=" * 60)
+            print("Monitoring Status:", state.get("monitoring_status"))
+            print("Patient Trajectory:", state.get("patient_trajectory"))
+            print("Risk Trend:", state.get("risk_trend"))
+            print("New Signals:", state.get("new_signals"))
+            print("Resolved Signals:", state.get("resolved_signals"))
+            print("Next Monitoring Action:", state.get("next_monitoring_action"))
+            print("Monitoring Explanation:", state.get("monitoring_explanation"))
