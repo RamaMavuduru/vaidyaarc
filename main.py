@@ -230,4 +230,21 @@ while True:
             print("New Signals:", state.get("new_signals"))
             print("Resolved Signals:", state.get("resolved_signals"))
             print("Next Monitoring Action:", state.get("next_monitoring_action"))
-            print("Monitoring Explanation:", state.get("monitoring_explanation"))
+            print("Monitoring Explanation:", state.get("monitoring_explanation"))
+
+        if state.get("representation_status"):
+            print("\n" + "=" * 60)
+            print("PHASE 7: AYURVEDA <-> MODERN MEDICINE REPRESENTATION")
+            print("=" * 60)
+            print("Representation Status:", state.get("representation_status"))
+            ayur_rep = state.get("ayurvedic_representation") or {}
+            mapped_concepts = ayur_rep.get("mapped_concepts") or []
+            print(f"Mapped Ayurvedic Descriptors ({len(mapped_concepts)}):")
+            for c in mapped_concepts:
+                print(f"  - {c.get('sanskrit_name')} ({c.get('english_descriptor')}) | Confidence: {c.get('mapping_confidence')}")
+            corr = state.get("correspondence_summary") or {}
+            print("Overall Correspondence:", corr.get("overall_correspondence_status"))
+            print("Summary Explanation:", corr.get("summary_explanation"))
+            print("Safety Notes / Disclaimers:")
+            for note in (state.get("ayurveda_safety_notes") or [])[:3]:
+                print(f"  * {note}")

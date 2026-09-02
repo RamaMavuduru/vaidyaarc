@@ -87,6 +87,14 @@ class VaidyaArcState(TypedDict, total=False):
     next_monitoring_action: Optional[str]
     monitoring_explanation: Optional[str]
 
+    # Phase 7: Ayurveda <-> Modern Medicine Representation
+    ayurveda_modern_output: Optional[dict[str, Any]]
+    modern_representation: Optional[dict[str, Any]]
+    ayurvedic_representation: Optional[dict[str, Any]]
+    correspondence_summary: Optional[dict[str, Any]]
+    representation_status: Optional[str]
+    ayurveda_safety_notes: list[str]
+
     # Future outputs
     recommendations: list[str]
-    physician_report: Optional[str]
+    physician_report: Optional[str]
