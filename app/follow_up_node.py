@@ -13,6 +13,7 @@ from typing import Any, Optional
 from app.state import VaidyaArcState
 from app.follow_up_schema import FollowUpMonitoringOutput
 from app.follow_up_comparison import compare_clinical_states
+from app.longitudinal_timeline import synthesize_longitudinal_context
 
 
 def _extract_previous_encounter_state(state: VaidyaArcState) -> Optional[dict[str, Any]]:
@@ -37,7 +38,7 @@ def _extract_previous_encounter_state(state: VaidyaArcState) -> Optional[dict[st
 
 def patient_monitoring(state: VaidyaArcState) -> dict[str, Any]:
     """
-    Phase 5 Patient Monitoring & Follow-up Node.
+    Phase 5 Patient Monitoring & Follow-up Node (Enhanced with Phase 9 Longitudinal Context).
     
     Transforms previous encounter state and current encounter state into
     an explainable, structured trajectory and risk trend analysis.
@@ -46,12 +47,15 @@ def patient_monitoring(state: VaidyaArcState) -> dict[str, Any]:
         previous_state = _extract_previous_encounter_state(state)
         current_message = state.get("current_message", "")
 
-        # Execute deterministic comparison engine
+        # Execute deterministic pairwise comparison engine (Phase 5 baseline)
         monitoring_output: FollowUpMonitoringOutput = compare_clinical_states(
             previous_state=previous_state,
             current_state=state,
             current_message=current_message,
         )
+
+        # Synthesize multi-encounter longitudinal patient context (Phase 9)
+        longitudinal_dto = synthesize_longitudinal_context(state)
 
         return {
             "monitoring_status": monitoring_output.monitoring_status,
@@ -62,6 +66,7 @@ def patient_monitoring(state: VaidyaArcState) -> dict[str, Any]:
             "next_monitoring_action": monitoring_output.next_monitoring_action,
             "monitoring_explanation": monitoring_output.monitoring_explanation,
             "follow_up_output": monitoring_output.model_dump(),
+            "longitudinal_context": longitudinal_dto.model_dump(),
         }
 
     except Exception as e:
@@ -75,4 +80,6 @@ def patient_monitoring(state: VaidyaArcState) -> dict[str, Any]:
             "next_monitoring_action": "Clinical assessment recommended to gather structured follow-up information.",
             "monitoring_explanation": error_msg,
             "follow_up_output": None,
+            "longitudinal_context": None,
         }
+

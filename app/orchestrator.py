@@ -24,8 +24,10 @@ from app.care_navigation_node import care_navigation
 from app.follow_up_node import patient_monitoring
 from app.ayurveda_modern_node import ayurveda_modern_representation
 from app.ayurveda_recommendation import evaluate_ayurveda_recommendations
+from app.longitudinal_timeline import synthesize_longitudinal_context
 
 from app.normalized_schemas import (
+
     NormalizedClinicalInputDTO,
     TurnResponseDTO,
     StructuredClinicalOutputDTO,
@@ -65,8 +67,11 @@ def _build_initial_state_from_input(dto: NormalizedClinicalInputDTO) -> VaidyaAr
         "previous_history": dto.previous_encounters,
         "previous_encounters": dto.previous_encounters,
         "previous_conversations": dto.previous_conversations,
+        "documents": [d.model_dump() for d in dto.documents],
         "ocr_documents": [d.model_dump() for d in dto.documents],
+        "investigations": dto.investigations,
         "conversation_history": [],
+
         "extracted_information": {},
         "chief_complaint": None,
         "nature_of_pain": None,
@@ -113,6 +118,11 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
     ayurveda_rec_output = evaluate_ayurveda_recommendations(state)
     ayurveda_rec_dict = ayurveda_rec_output.model_dump()
 
+    long_ctx = state.get("longitudinal_context")
+    if long_ctx is None:
+        long_ctx_dto = synthesize_longitudinal_context(state)
+        long_ctx = long_ctx_dto.model_dump()
+
     provenance_notes = [
         "Phase 2A deterministic safety rules (app/red_flag_rules.py)",
         "Phase 2B deterministic risk convergence scoring (phase2b_v1)",
@@ -121,6 +131,7 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
         "Phase 5 longitudinal comparison engine (Missing != Resolved)",
         "Phase 7 Ayurveda descriptive taxonomy (AYURVEDA_KB_V1)",
         "Phase 8B controlled Ayurveda knowledge retrieval and safety gate",
+        "Phase 9 deterministic longitudinal patient context & biomarker engine",
     ]
 
     intake_summary = {
@@ -160,8 +171,10 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
         follow_up_monitoring=state.get("follow_up_output"),
         ayurveda_modern_representation=state.get("ayurveda_modern_output"),
         ayurveda_recommendation=ayurveda_rec_dict,
+        longitudinal_context=long_ctx,
         provenance_notes=provenance_notes,
     )
+
 
 
 def process_turn(normalized_input: NormalizedClinicalInputDTO) -> TurnResponseDTO:

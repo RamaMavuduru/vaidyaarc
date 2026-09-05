@@ -10,6 +10,12 @@ class VaidyaArcState(TypedDict, total=False):
     # Patient profile
     patient_profile: dict[str, Any]
     previous_history: list[dict[str, Any]]
+    previous_encounters: list[dict[str, Any]]
+    previous_conversations: list[dict[str, Any]]
+    documents: list[dict[str, Any]]
+    ocr_documents: list[dict[str, Any]]
+    investigations: list[dict[str, Any]]
+
 
     # Conversation
     current_message: str
@@ -95,6 +101,10 @@ class VaidyaArcState(TypedDict, total=False):
     representation_status: Optional[str]
     ayurveda_safety_notes: list[str]
 
+    # Phase 9: Longitudinal Patient Intelligence
+    longitudinal_context: Optional[dict[str, Any]]
+
     # Future outputs
     recommendations: list[str]
     physician_report: Optional[str]
+
