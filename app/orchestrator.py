@@ -23,6 +23,7 @@ from app.clinical_case_node import clinical_case_representation
 from app.care_navigation_node import care_navigation
 from app.follow_up_node import patient_monitoring
 from app.ayurveda_modern_node import ayurveda_modern_representation
+from app.ayurveda_recommendation import evaluate_ayurveda_recommendations
 
 from app.normalized_schemas import (
     NormalizedClinicalInputDTO,
@@ -109,6 +110,9 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
     """
     case_id = state.get("clinical_case", {}).get("case_id") or f"{state.get('patient_id')}_{state.get('session_id')}"
     
+    ayurveda_rec_output = evaluate_ayurveda_recommendations(state)
+    ayurveda_rec_dict = ayurveda_rec_output.model_dump()
+
     provenance_notes = [
         "Phase 2A deterministic safety rules (app/red_flag_rules.py)",
         "Phase 2B deterministic risk convergence scoring (phase2b_v1)",
@@ -116,6 +120,7 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
         "Phase 4 care navigation facility matching engine",
         "Phase 5 longitudinal comparison engine (Missing != Resolved)",
         "Phase 7 Ayurveda descriptive taxonomy (AYURVEDA_KB_V1)",
+        "Phase 8B controlled Ayurveda knowledge retrieval and safety gate",
     ]
 
     intake_summary = {
@@ -154,6 +159,7 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
         care_navigation=state.get("care_navigation_output"),
         follow_up_monitoring=state.get("follow_up_output"),
         ayurveda_modern_representation=state.get("ayurveda_modern_output"),
+        ayurveda_recommendation=ayurveda_rec_dict,
         provenance_notes=provenance_notes,
     )
 

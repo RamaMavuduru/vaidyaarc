@@ -101,5 +101,6 @@ class StructuredClinicalOutputDTO(BaseModel):
     care_navigation: Optional[dict[str, Any]] = Field(default=None, description="Phase 4 matched facilities & pathway")
     follow_up_monitoring: Optional[dict[str, Any]] = Field(default=None, description="Phase 5 longitudinal comparison")
     ayurveda_modern_representation: Optional[dict[str, Any]] = Field(default=None, description="Phase 7 dual-perspective representation")
+    ayurveda_recommendation: Optional[dict[str, Any]] = Field(default=None, description="Phase 8B controlled Ayurveda remedy recommendations")
     provenance_notes: list[str] = Field(default_factory=list, description="System traceability metadata")
 

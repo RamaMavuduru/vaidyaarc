@@ -1,0 +1,657 @@
+{
+  "source_records": {
+    "SRC_CCRAS_HOME_REMEDIES_2005": [
+      {
+        "record_id": "CCRAS_HR_001_ADRAK",
+        "name": "Adrak / Sonth",
+        "aliases": ["Ginger", "Ardraka", "Sunthi"],
+        "botanical_name": "Zingiber officinale Rosc.",
+        "record_type": "home_remedy",
+        "authority_level": "primary_official",
+        "evidence_type": "official_practical",
+        "formulation_form": "crushed rhizome / powder / decoction / paste",
+        "ingredients": ["Zingiber officinale"],
+        "traditional_indications": ["indigestion", "ear pain", "hoarseness of voice", "aches & pains", "cold", "cough", "headache", "abdominal pain"],
+        "indication_details": [
+          {"indication": "indigestion", "preparation": "5 gm. crushed rhizome with salt or jaggery twice daily before meal", "source_dosage": "5 gm."},
+          {"indication": "ear pain", "preparation": "2-4 drops of fresh warm juice instilled in ear", "source_dosage": "2-4 drops", "warnings": ["Do not use when there is discharge"]},
+          {"indication": "hoarseness of voice", "preparation": "1-3 gm. powder of dry rhizome with honey in 3 divided doses", "source_dosage": "1-3 gm."},
+          {"indication": "aches & pains", "preparation": "10-20 ml. decoction prepared from 2 gm. of dry rhizome twice a day", "source_dosage": "10-20 ml."},
+          {"indication": "cold", "preparation": "2-5 gm. powder of dry rhizome with jaggery thrice a day in divided doses; 10 ml decoction every morning", "source_dosage": "2-5 gm."},
+          {"indication": "cough", "preparation": "2-5 gm. powder of dry rhizome with jaggery thrice a day in divided doses", "source_dosage": "2-5 gm."},
+          {"indication": "headache", "preparation": "Warm paste applied over forehead up to 3-4 times a day (external application)", "source_dosage": "local application"},
+          {"indication": "abdominal pain", "preparation": "5 ml. juice in a glass of butter milk with lemon & salt", "source_dosage": "5 ml."}
+        ],
+        "warnings": ["Do not use ear drops when there is ear discharge"],
+        "contraindications": [],
+        "safety_notes": ["If no relief within 2-3 days, consult a qualified physician"],
+        "limitations": ["Practical household guidance for mild symptoms only"],
+        "provenance": {
+          "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+          "document_title": "Ayurvedic Home Remedies",
+          "page": 1,
+          "section": "Adrak/Sonth",
+          "excerpt": "5 gm. crushed rhizome with salt or jaggery twice daily before meal for indigestion; 2-5 gm. powder of dry rhizome with jaggery thrice a day in divided doses for cold/cough."
+        }
+      },
+      {
+        "record_id": "CCRAS_HR_002_AJVAIN",
+        "name": "Ajvain",
+        "aliases": ["Carom seeds", "Yavani", "Ajwain"],
+        "botanical_name": "Trachyspermum ammi Sprague",
+        "record_type": "home_remedy",
+        "authority_level": "primary_official",
+        "evidence_type": "official_practical",
+        "formulation_form": "powder / seeds / paste / steam inhalation",
+        "ingredients": ["Trachyspermum ammi"],
+        "traditional_indications": ["piles", "painful menses", "urticaria", "skin allergy", "abdominal pain", "flatulence", "gas", "sinusitis", "nasal block", "loss of appetite"],
+        "indication_details": [
+          {"indication": "abdominal pain", "preparation": "1 gm. powder with lukewarm water twice or thrice", "source_dosage": "1 gm."},
+          {"indication": "flatulence", "preparation": "2 gm. ajvain powder with equal quantity of Saunf powder with warm water", "source_dosage": "2 gm."},
+          {"indication": "loss of appetite", "preparation": "1 gm. powder with warm water 1/2 hour before meals", "source_dosage": "1 gm."},
+          {"indication": "nasal block", "preparation": "1-2 gm powder in steaming water and vapour inhaled 2-3 times a day", "source_dosage": "1-2 gm inhalation"}
+        ],
+        "warnings": [],
+        "contraindications": [],
+        "safety_notes": ["Mild household supportive measure"],
+        "limitations": ["Not a cure for severe gastrointestinal or acute respiratory distress"],
+        "provenance": {
+          "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+          "document_title": "Ayurvedic Home Remedies",
+          "page": 2,
+          "section": "Ajvain",
+          "excerpt": "1 gm. powder with luke warm water twice or thrice for abdominal pain; 2 gm. ajvain powder with equal quantity of Saunf powder with warm water for flatulence."
+        }
+      },
+      {
+        "record_id": "CCRAS_HR_003_ANAR",
+        "name": "Anar",
+        "aliases": ["Pomegranate", "Dadima"],
+        "botanical_name": "Punica granatum Linn.",
+        "record_type": "home_remedy",
+        "authority_level": "primary_official",
+        "evidence_type": "official_practical",
+        "formulation_form": "fruit juice / fruit rind powder / decoction",
+        "ingredients": ["Punica granatum"],
+        "traditional_indications": ["indigestion", "bleeding piles", "diarrhoea", "dysentery", "hyper-acidity", "bad breath", "acne"],
+        "indication_details": [
+          {"indication": "indigestion", "preparation": "10 ml. juice of fruit with 1 gm. black salt or fried Jira powder with honey or sugar before food", "source_dosage": "10 ml."},
+          {"indication": "hyper-acidity", "preparation": "10 ml. juice of fruit twice a day", "source_dosage": "10 ml."},
+          {"indication": "diarrhoea", "preparation": "10 ml. decoction of fruit skin thrice a day", "source_dosage": "10 ml."}
+        ],
+        "warnings": [],
+        "contraindications": [],
+        "safety_notes": ["Nutritious fruit suitable for diet in mild conditions"],
+        "limitations": ["Dietary supportive use"],
+        "provenance": {
+          "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+          "document_title": "Ayurvedic Home Remedies",
+          "page": 3,
+          "section": "Anar",
+          "excerpt": "10 ml. juice of fruit twice a day for hyper-acidity; 10 ml. decoction of fruit skin thrice a day for diarrhoea/dysentery."
+        }
+      },
+      {
+        "record_id": "CCRAS_HR_004_AMLA",
+        "name": "Amla",
+        "aliases": ["Indian Gooseberry", "Amalaki"],
+        "botanical_name": "Emblica officinalis Gaertn.",
+        "record_type": "home_remedy",
+        "authority_level": "primary_official",
+        "evidence_type": "official_practical",
+        "formulation_form": "powder / fruit juice / fresh fruit",
+        "ingredients": ["Emblica officinalis"],
+        "traditional_indications": ["general health", "hyper acidity", "peptic ulcer", "constipation", "stress", "diabetes", "dandruff", "bleeding gums"],
+        "indication_details": [
+          {"indication": "hyper acidity", "preparation": "3-5 gm. powdered fruit rind twice a day with milk or 10-20 ml. fruit juice twice a day", "source_dosage": "3-5 gm."},
+          {"indication": "constipation", "preparation": "3-5 gm. powdered fruit rind twice a day with milk", "source_dosage": "3-5 gm."},
+          {"indication": "general health", "preparation": "1-2 fresh fruits eaten every morning", "source_dosage": "1-2 fruits"}
+        ],
+        "warnings": [],
+        "contraindications": [],
+        "safety_notes": ["General health promoter and dietary supplement"],
+        "limitations": ["Supportive dietary advice; not replacement for medical management of diabetes/peptic ulcer"],
+        "provenance": {
+          "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+          "document_title": "Ayurvedic Home Remedies",
+          "page": 4,
+          "section": "Amla",
+          "excerpt": "3-5 gm. powdered fruit rind twice a day with milk or 10-20 ml. fruit juice twice a day for hyper acidity/peptic ulcer/constipation."
+        }
+      },
+      {
+        "record_id": "CCRAS_HR_005_DALCHINI",
+        "name": "Dalchini",
+        "aliases": ["Cinnamon", "Tvak"],
+        "botanical_name": "Cinnamomum zeylanicum Blume",
+        "record_type": "home_remedy",
+        "authority_level": "primary_official",
+        "evidence_type": "official_practical",
+        "formulation_form": "powder / chewed bark",
+        "ingredients": ["Cinnamomum zeylanicum"],
+        "traditional_indications": ["indigestion", "loss of appetite", "vomiting", "tension headache", "dry cough"],
+        "indication_details": [
+          {"indication": "indigestion", "preparation": "2 gm. powder of bark with water twice a day", "source_dosage": "2 gm."},
+          {"indication": "dry cough", "preparation": "Chewing controls throat irritation and helps in dry cough", "source_dosage": "chewing"}
+        ],
+        "warnings": [],
+        "contraindications": [],
+        "safety_notes": ["Culinary spice with soothing digestive action"],
+        "limitations": ["Mild symptom support only"],
+        "provenance": {
+          "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+          "document_title": "Ayurvedic Home Remedies",
+          "page": 5,
+          "section": "Dalchini",
+          "excerpt": "2 gm. powder of bark with water twice a day for indigestion; chewing controls the throat irritation and helps in dry cough."
+        }
+      },
+      {
+        "record_id": "CCRAS_HR_006_DHANIA",
+        "name": "Dhania",
+        "aliases": ["Coriander", "Dhanyaka"],
+        "botanical_name": "Coriandrum sativum Linn.",
+        "record_type": "home_remedy",
+        "authority_level": "primary_official",
+        "evidence_type": "official_practical",
+        "formulation_form": "decoction / coarse powder / herbal tea",
+        "ingredients": ["Coriandrum sativum"],
+        "traditional_indications": ["cold", "cough", "intestinal worms", "sun stroke", "dehydration", "indigestion", "fever"],
+        "indication_details": [
+          {"indication": "cold", "preparation": "20 ml. decoction prepared from 5 gm. coarse powder with sugar and turmeric powder thrice a day", "source_dosage": "20 ml."},
+          {"indication": "cough", "preparation": "20 ml. decoction prepared from 5 gm. coarse powder with sugar and turmeric powder thrice a day", "source_dosage": "20 ml."},
+          {"indication": "fever", "preparation": "20 ml. decoction from 5 gm. powder with sugar 3-4 times a day", "source_dosage": "20 ml."},
+          {"indication": "indigestion", "preparation": "20 ml. decoction prepared from 5 gm. coarse powder with a pinch of ginger powder thrice a day", "source_dosage": "20 ml."}
+        ],
+        "warnings": [],
+        "contraindications": [],
+        "safety_notes": ["Mild cooling digestive drink"],
+        "limitations": ["Supportive hydration and mild symptomatic relief"],
+        "provenance": {
+          "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+          "document_title": "Ayurvedic Home Remedies",
+          "page": 6,
+          "section": "Dhania",
+          "excerpt": "20 ml. decoction prepared from 5 gm. coarse powder with sugar and turmeric powder thrice a day for cold/cough; 20 ml. decoction from 5 gm. powder with sugar 3-4 times a day for fever."
+        }
+      },
+      {
+        "record_id": "CCRAS_HR_007_ELAICHI",
+        "name": "Elaichi",
+        "aliases": ["Cardamom", "Ela"],
+        "botanical_name": "Elettaria cardamomum Maton",
+        "record_type": "home_remedy",
+        "authority_level": "primary_official",
+        "evidence_type": "official_practical",
+        "formulation_form": "fruits / seed powder / ash / decoction",
+        "ingredients": ["Elettaria cardamomum"],
+        "traditional_indications": ["hiccough", "vomiting", "bad breath", "diarrhoea", "cold", "cough"],
+        "indication_details": [
+          {"indication": "hiccough", "preparation": "1-2 fruits to be chewed frequently (not more than 4/day)", "source_dosage": "1-2 fruits"},
+          {"indication": "cough", "preparation": "Little elaichi powder with a tea spoon full of honey 3-4 times day; or chewing elaichi (not more than 3 per day)", "source_dosage": "pinch with honey"}
+        ],
+        "warnings": [],
+        "contraindications": [],
+        "safety_notes": ["Do not chew excessively"],
+        "limitations": ["Supportive symptomatic measure"],
+        "provenance": {
+          "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+          "document_title": "Ayurvedic Home Remedies",
+          "page": 7,
+          "section": "Elaichi",
+          "excerpt": "1-2 fruits to be chewed frequently (not more than 4/day) for hiccough; little elaichi powder with a tea spoon full of honey 3-4 times day for cough."
+        }
+      },
+      {
+        "record_id": "CCRAS_HR_008_GHEE",
+        "name": "Ghee",
+        "aliases": ["Clarified Butter", "Ghrita", "Goghrita"],
+        "botanical_name": null,
+        "record_type": "home_remedy",
+        "authority_level": "primary_official",
+        "evidence_type": "official_practical",
+        "formulation_form": "medicated fat / dietary vehicle",
+        "ingredients": ["Clarified butter of cow's milk"],
+        "traditional_indications": ["ulcer", "wounds", "burns", "loss of appetite", "memory", "constipation"],
+        "indication_details": [
+          {"indication": "constipation", "preparation": "5 ml. ghee put in a cup of warm milk taken with sugar at bed time", "source_dosage": "5 ml."},
+          {"indication": "burns", "preparation": "Application over affected part frequently", "source_dosage": "topical"}
+        ],
+        "warnings": [],
+        "contraindications": [],
+        "safety_notes": ["Traditional vehicle and nutrient"],
+        "limitations": ["Dietary supportive use"],
+        "provenance": {
+          "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+          "document_title": "Ayurvedic Home Remedies",
+          "page": 8,
+          "section": "Ghee",
+          "excerpt": "5 ml. ghee put in a cup of warm milk should be taken with sugar at bed time for constipation; application over affected part frequently for ulcer/wounds/burns."
+        }
+      },
+      {
+        "record_id": "CCRAS_HR_009_HALDI",
+        "name": "Haldi",
+        "aliases": ["Turmeric", "Haridra"],
+        "botanical_name": "Curcuma longa Linn.",
+        "record_type": "home_remedy",
+        "authority_level": "primary_official",
+        "evidence_type": "official_practical",
+        "formulation_form": "powder / fresh juice / paste / decoction",
+        "ingredients": ["Curcuma longa"],
+        "traditional_indications": ["diabetes", "acne", "cold", "wound", "ulcer", "skin disease", "skin allergy"],
+        "indication_details": [
+          {"indication": "cold", "preparation": "2 gm. powder with warm milk and sugar twice a day; or decoction of 1 gm. Haldi powder in herbal tea", "source_dosage": "2 gm."},
+          {"indication": "skin allergy", "preparation": "1-3 gm. powder taken with jaggery twice a day", "source_dosage": "1-3 gm."},
+          {"indication": "wound", "preparation": "Washed with decoction of Haldi and paste applied; paste made by mixing with Ghee/coconut oil over affected part", "source_dosage": "topical"}
+        ],
+        "warnings": [],
+        "contraindications": [],
+        "safety_notes": ["Common household remedy for mild allergic and inflammatory symptoms"],
+        "limitations": ["Not a standalone treatment for severe wounds or systemic infections"],
+        "provenance": {
+          "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+          "document_title": "Ayurvedic Home Remedies",
+          "page": 9,
+          "section": "Haldi",
+          "excerpt": "2 gm. powder with warm milk and sugar twice a day for cold; 1-3 gm. powder should be taken with jaggery twice a day for skin allergy."
+        }
+      },
+      {
+        "record_id": "CCRAS_HR_010_HING",
+        "name": "Hing",
+        "aliases": ["Asafoetida", "Hingu"],
+        "botanical_name": "Ferula narthex Boiss.",
+        "record_type": "home_remedy",
+        "authority_level": "primary_official",
+        "evidence_type": "official_practical",
+        "formulation_form": "fried in ghee / dissolved in water paste",
+        "ingredients": ["Ferula narthex"],
+        "traditional_indications": ["abdominal pain", "toothache", "loss of appetite", "abdominal distention", "flatulence"],
+        "indication_details": [
+          {"indication": "abdominal pain", "preparation": "Stir and dissolve in water and apply on & around umbilicus; or 1 gm. Hing fried in ghee with butter milk twice a day", "source_dosage": "1 gm. or topical"},
+          {"indication": "loss of appetite", "preparation": "A pinch of Hing fried in ghee & a piece of adrak crushed taken with butter milk before food", "source_dosage": "pinch"}
+        ],
+        "warnings": ["Best way is to fry hing in little ghee before internal use"],
+        "contraindications": [],
+        "safety_notes": ["Specially helpful for mild abdominal distention in infants/children when applied externally"],
+        "limitations": ["Emergency abdominal pathology (acute abdomen, appendicitis, obstruction) strictly excluded"],
+        "provenance": {
+          "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+          "document_title": "Ayurvedic Home Remedies",
+          "page": 10,
+          "section": "Hing",
+          "excerpt": "1 gm. Hing fried in ghee with butter milk twice a day for abdominal pain; stir and dissolve in water and apply on & around umbilicus for abdominal distention."
+        }
+      },
+      {
+        "record_id": "CCRAS_HR_011_JEERA",
+        "name": "Jeera",
+        "aliases": ["Cumin", "Jiraka"],
+        "botanical_name": "Cuminum cyminum Linn.",
+        "record_type": "home_remedy",
+        "authority_level": "primary_official",
+        "evidence_type": "official_practical",
+        "formulation_form": "powder / fried seeds / decoction",
+        "ingredients": ["Cuminum cyminum"],
+        "traditional_indications": ["indigestion", "diarrhoea", "dysentery", "hyper-acidity", "skin disease", "cold", "cough"],
+        "indication_details": [
+          {"indication": "indigestion", "preparation": "3-6 gm. powder of fried Jeera and rock-salt with warm water thrice daily", "source_dosage": "3-6 gm."},
+          {"indication": "hyper-acidity", "preparation": "5-10 gm. ghee boiled with Jeera taken with rice during meals", "source_dosage": "5-10 gm."},
+          {"indication": "cold", "preparation": "Warm decoction of 2 gm. Jeera, 5 gm. Dhania, 1 gm. Haldi, 1 gm. Methi with honey/sugar and lemon", "source_dosage": "20 ml."}
+        ],
+        "warnings": [],
+        "contraindications": [],
+        "safety_notes": ["Mild household carminative spice"],
+        "limitations": ["Supportive dietary advice"],
+        "provenance": {
+          "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+          "document_title": "Ayurvedic Home Remedies",
+          "page": 12,
+          "section": "Jeera",
+          "excerpt": "3-6 gm. powder of fried Jeera and rock-salt with warm water thrice daily for indigestion; warm decoction with Dhania and Haldi for cold/cough."
+        }
+      },
+      {
+        "record_id": "CCRAS_HR_012_TULSI",
+        "name": "Tulsi",
+        "aliases": ["Holy Basil", "Tulasi"],
+        "botanical_name": "Ocimum sanctum",
+        "record_type": "home_remedy",
+        "authority_level": "primary_official",
+        "evidence_type": "official_practical",
+        "formulation_form": "leaf juice / decoction / paste",
+        "ingredients": ["Ocimum sanctum"],
+        "traditional_indications": ["cough", "cold", "fever", "skin allergy", "indigestion", "loss of appetite", "wound", "ear pain"],
+        "indication_details": [
+          {"indication": "cough", "preparation": "5-10 ml. juice twice or thrice a day with honey", "source_dosage": "5-10 ml."},
+          {"indication": "cold", "preparation": "5-10 ml. juice twice or thrice a day with honey", "source_dosage": "5-10 ml."},
+          {"indication": "fever", "preparation": "30 ml. decoction from handful of leaves & 5 gm. Dhania thrice a day", "source_dosage": "30 ml."}
+        ],
+        "warnings": ["Do not use ear drops when there is discharge"],
+        "contraindications": [],
+        "safety_notes": ["Widely used supportive home remedy for mild upper respiratory catarrh"],
+        "limitations": ["Not a treatment for severe fever, pneumonia, or respiratory distress"],
+        "provenance": {
+          "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+          "document_title": "Ayurvedic Home Remedies",
+          "page": 25,
+          "section": "Tulsi",
+          "excerpt": "5-10 ml. juice twice or thrice a day with honey for cough/cold; 30 ml. decoction from handful of leaves & 5 gm. Dhania thrice a day for fever."
+        }
+      },
+      {
+        "record_id": "CCRAS_HR_013_SAUNF",
+        "name": "Saunf",
+        "aliases": ["Fennel", "Shatapushpa", "Misreya"],
+        "botanical_name": "Foeniculum vulgare Mill.",
+        "record_type": "home_remedy",
+        "authority_level": "primary_official",
+        "evidence_type": "official_practical",
+        "formulation_form": "powder / chewed seeds",
+        "ingredients": ["Foeniculum vulgare"],
+        "traditional_indications": ["indigestion", "diarrhoea", "dysentery", "abdominal pain", "bad breath", "loss of appetite"],
+        "indication_details": [
+          {"indication": "indigestion", "preparation": "3-5 gm. powder with powder of fried Jeera and rock-salt with warm water thrice daily", "source_dosage": "3-5 gm."},
+          {"indication": "abdominal pain", "preparation": "3-5 gm. powder with butter milk 3-4 times daily", "source_dosage": "3-5 gm."}
+        ],
+        "warnings": [],
+        "contraindications": [],
+        "safety_notes": ["Mild carminative and digestive aid"],
+        "limitations": ["Supportive household use"],
+        "provenance": {
+          "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+          "document_title": "Ayurvedic Home Remedies",
+          "page": 24,
+          "section": "Saunf",
+          "excerpt": "3-5 gm. powder with powder of fried Jeera and rock-salt with warm water thrice daily for indigestion; 3-5 gm. powder with butter milk 3-4 times daily for abdominal pain."
+        }
+      }
+    ],
+    "SRC_API_PART2_VOL2_2008": [
+      {
+        "record_id": "API2_FORM_001_ABHAYARISHTA",
+        "name": "Abhayarishta",
+        "aliases": ["Abhayarista", "Abhayarishtam"],
+        "botanical_name": null,
+        "record_type": "pharmacopoeial_formulation",
+        "authority_level": "primary_official",
+        "evidence_type": "official_pharmacopoeial",
+        "formulation_form": "Asava / Arishta (Fermented liquid)",
+        "ingredients": ["Terminalia chebula (Haritaki)", "Vitis vinifera (Draksha)", "Embelia ribes (Vidanga)", "Madhuca indica", "Jaggery (Guda)", "Tribulus terrestris (Gokshura)", "Operculina turpethum (Trivrit)", "Coriandrum sativum (Dhanyaka)", "Woodfordia fruticosa (Dhataki)", "Citrullus colocynthis (Indravaruni)", "Piper retrofractum (Cavya)", "Foeniculum vulgare (Misreya)", "Zingiber officinale (Sunthi)", "Baliospermum montanum (Danti)", "Salmalia malabarica (Mocarasa)"],
+        "traditional_indications": ["arsa", "piles", "haemorrhoids", "udara", "abdominal diseases", "mutravibandha", "retention of urine", "agnimandya", "digestive impairment", "varcovibandha", "constipation"],
+        "indication_details": [
+          {"indication": "constipation", "preparation": "Fermented formulation", "source_dosage": "15 – 30 ml orally with equal amount of water after meals twice a day"},
+          {"indication": "digestive impairment", "preparation": "Fermented formulation", "source_dosage": "15 – 30 ml orally with equal amount of water after meals twice a day"},
+          {"indication": "piles", "preparation": "Fermented formulation", "source_dosage": "15 – 30 ml orally with equal amount of water after meals twice a day"}
+        ],
+        "preparation_method": "Decoction of Kvatha Dravyas reduced to one fourth, dissolved with Guda, fermented with Dhataki and Praksepa Dravyas, filtered through muslin cloth.",
+        "source_dosage_info": "15 – 30 ml orally with equal amount of water after meals twice a day (AFI Part-I reference standard).",
+        "anupana": "Equal amount of water",
+        "warnings": ["Alcohol content 6.5 to 10 per cent v/v (self-generated)"],
+        "contraindications": [],
+        "safety_notes": ["Official pharmacopoeial standard formulation; dosage represents average adult guidance and requires physician oversight"],
+        "limitations": ["Requires professional clinical diagnosis before prescribing"],
+        "provenance": {
+          "source_id": "SRC_API_PART2_VOL2_2008",
+          "document_title": "The Ayurvedic Pharmacopoeia of India, Part - II, Vol - II",
+          "page": 3,
+          "section": "1. Abhayarista (AFI, Part-I, 1:1)",
+          "excerpt": "Therapeutic uses: Arsa (piles), Udara (diseases of abdomen), Mutravibandha (retention of urine), Agnimandya (digestive impairment); Varcovibandha (constipation). Dose: 15 – 30 ml orally with equal amount of water after meals twice a day."
+        }
+      },
+      {
+        "record_id": "API2_FORM_002_AMRITARISHTA",
+        "name": "Amritarishta",
+        "aliases": ["Amrtarista", "Amritarishtam"],
+        "botanical_name": null,
+        "record_type": "pharmacopoeial_formulation",
+        "authority_level": "primary_official",
+        "evidence_type": "official_pharmacopoeial",
+        "formulation_form": "Asava / Arishta (Fermented liquid)",
+        "ingredients": ["Tinospora cordifolia (Guduchi)", "Aegle marmelos (Bilva)", "Oroxylum indicum (Syonaka)", "Gmelina arborea (Gambhari)", "Stereospermum suaveolens (Patala)", "Premna mucronata (Agnimantha)", "Desmodium gangeticum (Salaparni)", "Uraria picta (Prsniparni)", "Solanum indicum (Brihati)", "Solanum surattense (Kantakari)", "Tribulus terrestris (Gokshura)", "Jaggery (Guda)", "Cuminum cyminum", "Fumaria parviflora (Parpata)", "Alstonia scholaris (Saptaparna)", "Zingiber officinale", "Piper nigrum", "Piper longum", "Mesua ferrea", "Cyperus rotundus", "Picrorhiza kurroa", "Aconitum heterophyllum", "Holarrhena antidysenterica"],
+        "traditional_indications": ["jvara", "fever", "all types of jvara", "chronic fever", "intermittent fever"],
+        "indication_details": [
+          {"indication": "fever", "preparation": "Fermented formulation", "source_dosage": "15 – 30 ml orally with equal amount of water after meals twice a day"}
+        ],
+        "preparation_method": "Decoction of Dasamula + Guduchi reduced to one fourth, dissolved with Guda, fermented with Praksepa powders, filtered.",
+        "source_dosage_info": "15 – 30 ml orally with equal amount of water after meals twice a day.",
+        "anupana": "Equal amount of water",
+        "warnings": ["Self generated alcohol 5 to 8 per cent v/v"],
+        "contraindications": [],
+        "safety_notes": ["Traditional antipyretic formulation; not for emergency febrile delirium or sepsis"],
+        "limitations": ["Clinical examination required for fever etiology"],
+        "provenance": {
+          "source_id": "SRC_API_PART2_VOL2_2008",
+          "document_title": "The Ayurvedic Pharmacopoeia of India, Part - II, Vol - II",
+          "page": 7,
+          "section": "2. Amrtarista (AFI, Part-I, 1:2)",
+          "excerpt": "Therapeutic uses: All types of Jvara (fever). Dose: 15 – 30 ml orally with equal amount of water after meals twice a day."
+        }
+      },
+      {
+        "record_id": "API2_FORM_009_DRAKSHARISHTA",
+        "name": "Draksharishta",
+        "aliases": ["Draksarista", "Draksharishtam"],
+        "botanical_name": null,
+        "record_type": "pharmacopoeial_formulation",
+        "authority_level": "primary_official",
+        "evidence_type": "official_pharmacopoeial",
+        "formulation_form": "Asava / Arishta (Fermented liquid)",
+        "ingredients": ["Vitis vinifera (Draksha)", "Jaggery (Guda)", "Cinnamomum zeylanicum (Tvak)", "Elettaria cardamomum (Ela)", "Cinnamomum tamala (Tejapatra)", "Mesua ferrea (Nagakesara)", "Callicarpa macrophylla (Priyangu)", "Piper nigrum (Marica)", "Piper longum (Pippali)", "Embelia ribes (Vidanga)", "Woodfordia fruticosa (Dhataki)"],
+        "traditional_indications": ["agnimandya", "digestive impairment", "kasa", "cough", "svasa", "dyspnoea", "asthma", "ksaya", "pthisis", "urahksata", "chest wound", "malasodhaka", "laxative", "galaroga", "diseases of throat", "daurbalya", "weakness"],
+        "indication_details": [
+          {"indication": "cough", "preparation": "Fermented formulation", "source_dosage": "15 – 30 ml orally with equal amount of water after meals twice a day"},
+          {"indication": "weakness", "preparation": "Fermented formulation", "source_dosage": "15 – 30 ml orally with equal amount of water after meals twice a day"}
+        ],
+        "preparation_method": "Decoction of Draksha reduced to one fourth, dissolved with Guda, fermented with Dhataki and spices.",
+        "source_dosage_info": "15 – 30 ml orally with equal amount of water after meals twice a day.",
+        "anupana": "Equal amount of water",
+        "warnings": ["Alcohol content 5 to 10 per cent v/v"],
+        "contraindications": [],
+        "safety_notes": ["Traditional nutritive and respiratory restorative formulation"],
+        "limitations": ["Not a standalone rescue medicine for acute severe bronchospasm"],
+        "provenance": {
+          "source_id": "SRC_API_PART2_VOL2_2008",
+          "document_title": "The Ayurvedic Pharmacopoeia of India, Part - II, Vol - II",
+          "page": 36,
+          "section": "9. Draksarista (AFI, Part-I, 1:20)",
+          "excerpt": "Therapeutic uses: Agnimandya (digestive impairment), Kasa (cough), Svasa (dyspnoea/ asthma), Ksaya (pthisis), Urahksata (chest wound), Malasodhaka (laxative), Galaroga (diseases of throat) and Daurbalya (weakness). Dose: 15 – 30 ml orally with equal amount of water after meals twice a day."
+        }
+      },
+      {
+        "record_id": "API2_FORM_029_BHASKARALAVANA",
+        "name": "Bhaskaralavana Churna",
+        "aliases": ["Lavanabhaskara Curna", "Lavana Bhaskara Churna"],
+        "botanical_name": null,
+        "record_type": "pharmacopoeial_formulation",
+        "authority_level": "primary_official",
+        "evidence_type": "official_pharmacopoeial",
+        "formulation_form": "Curna (Powder)",
+        "ingredients": ["Samudra Lavana (Sea salt)", "Sauvarcala Lavana (Black salt)", "Vida Lavana", "Saindhava Lavana (Rock salt)", "Coriandrum sativum (Dhanyaka)", "Piper longum (Pippali)", "Piper longum root (Pippalimula)", "Carum carvi (Krishna Jiraka)", "Cinnamomum tamala", "Mesua ferrea", "Abies webbiana (Talisa)", "Garcinia pedunculata (Amlavetasa)", "Piper nigrum (Marica)", "Cuminum cyminum (Jiraka)", "Zingiber officinale (Sunthi)", "Punica granatum seed (Dadima Bija)", "Cinnamomum zeylanicum (Tvak)", "Elettaria cardamomum (Ela)"],
+        "traditional_indications": ["agnimandya", "digestive impairment", "sula", "colic pain", "grahani", "malabsorption", "vatakaphaja gulma", "pliha", "splenic disease", "udara", "arsa", "piles", "vibandha", "constipation", "amavata", "rheumatism", "ajirna", "dyspepsia"],
+        "indication_details": [
+          {"indication": "dyspepsia", "preparation": "Compound salt and spice powder", "source_dosage": "2-5 g in divided doses"},
+          {"indication": "digestive impairment", "preparation": "Compound salt and spice powder", "source_dosage": "2-5 g in divided doses"}
+        ],
+        "preparation_method": "Roast salts in stainless steel pan on low flame; finely powder botanicals to sieve 44/85; mix homogeneously.",
+        "source_dosage_info": "2-5 g in divided doses.",
+        "anupana": "Mastu, Takra, Asava, Warm water",
+        "warnings": ["Contains high mineral salt content (Sodium not less than 14 per cent w/w). Use with caution in hypertension/renal disorders."],
+        "contraindications": ["Hypertension and sodium-restricted diets require cautious medical evaluation"],
+        "safety_notes": ["Potent digestive salt preparation; strictly non-prescriptive guidance"],
+        "limitations": ["Contraindicated in severe fluid overload, renal compromise, or severe acute abdominal pain"],
+        "provenance": {
+          "source_id": "SRC_API_PART2_VOL2_2008",
+          "document_title": "The Ayurvedic Pharmacopoeia of India, Part - II, Vol - II",
+          "page": 112,
+          "section": "29. Bhaskaralavana Curna (AFI, Part-I, 7:27)",
+          "excerpt": "Therapeutic uses: Agnimandya (digestive impairment); Sula (pain); Grahani (mal absorption syndrome); Vatakaphaja Gulma; Pliha; Udara; Arsa; Ksaya; Kustha; Vibandha (constipation); Bhagandara; Sopha; Svasa; Kasa; Amavata; Hrdruja; Ajirna (dyspepsia). Dose: 2-5 g in divided doses. Anupana: Mastu, Takra, Asava, Warm water."
+        }
+      },
+      {
+        "record_id": "API2_FORM_033_DADIMADI_GHRITA",
+        "name": "Dadimadi Ghrita",
+        "aliases": ["Dadimadi Ghrta", "Dadimadi Ghee"],
+        "botanical_name": null,
+        "record_type": "pharmacopoeial_formulation",
+        "authority_level": "primary_official",
+        "evidence_type": "official_pharmacopoeial",
+        "formulation_form": "Ghrita (Medicated clarified butter)",
+        "ingredients": ["Punica granatum seed (Dadima)", "Coriandrum sativum (Dhanya)", "Plumbago zeylanica (Citraka)", "Zingiber officinale (Sunthi)", "Piper nigrum (Pippali)", "Clarified butter from cow's milk (Goghrita)", "Water"],
+        "traditional_indications": ["pandu", "anemia", "gulma", "abdominal lump", "pliharoga", "splenic disease", "hrdroga", "heart disease", "arsa", "piles", "parinamasula", "duodenal ulcer", "garbhini roga", "pregnancy complaints", "agnimandya", "digestive impairment", "kasa", "cough"],
+        "indication_details": [
+          {"indication": "digestive impairment", "preparation": "Medicated ghee", "source_dosage": "6 to 12 gm twice a day"},
+          {"indication": "anemia", "preparation": "Medicated ghee", "source_dosage": "6 to 12 gm twice a day"}
+        ],
+        "preparation_method": "Kalka of Dadima and spices cooked in Goghrita with water until Madhyama Paka varti formation.",
+        "source_dosage_info": "6 to 12 gm twice a day.",
+        "anupana": "Warm water",
+        "warnings": [],
+        "contraindications": [],
+        "safety_notes": ["Traditional digestive and hematinic medicated ghee"],
+        "limitations": ["Physician diagnosis required before clinical use"],
+        "provenance": {
+          "source_id": "SRC_API_PART2_VOL2_2008",
+          "document_title": "The Ayurvedic Pharmacopoeia of India, Part - II, Vol - II",
+          "page": 129,
+          "section": "33. Dadimadi Ghrta (AFI, Part-I, 6:19)",
+          "excerpt": "Therapeutic uses: Pandu (anemia); Gulma (abdominal lump); Pliharoga; Hrdroga; Arsa; Parinamasula (duodenal ulcer); Garbhini Roga; Vata-Kapha Roga; Agnimandya (digestive impairment); Svasa; Kasa. Dose: 6 to 12 gm twice a day. Anupana: Warm water."
+        }
+      },
+      {
+        "record_id": "API2_FORM_037_GOKSHURADI_GUGGULU",
+        "name": "Gokshuradi Guggulu",
+        "aliases": ["Goksuradi Guggulu"],
+        "botanical_name": null,
+        "record_type": "pharmacopoeial_formulation",
+        "authority_level": "primary_official",
+        "evidence_type": "official_pharmacopoeial",
+        "formulation_form": "Guggulu Vati (Pill / Tablet)",
+        "ingredients": ["Tribulus terrestris (Gokshura)", "Commiphora wightii (Guggulu)", "Zingiber officinale (Sunthi)", "Piper nigrum (Marica)", "Piper longum (Pippali)", "Terminalia chebula (Haritaki)", "Terminalia belerica (Bibhitaka)", "Emblica officinalis (Amalaki)", "Cyperus rotundus (Musta)"],
+        "traditional_indications": ["prameha", "urinary turbidity", "mutrakrcchra", "dysuria", "mutraghata", "urinary obstruction", "asmari", "calculus", "pradara", "vatarakta", "gout", "vataroga", "sukra dosa"],
+        "indication_details": [
+          {"indication": "dysuria", "preparation": "Guggulu pills", "source_dosage": "2 - 3 g daily in divided doses"},
+          {"indication": "gout", "preparation": "Guggulu pills", "source_dosage": "2 - 3 g daily in divided doses"}
+        ],
+        "preparation_method": "Gokshura decoction concentrated with Shuddha Guggulu, blended with Trikatu, Triphala, Musta powders, pounded with Ghrita, rolled into Vatis.",
+        "source_dosage_info": "2 - 3 g daily in divided doses.",
+        "anupana": "Musta Kvatha, Pasanabheda Kvatha, Usira Kvatha",
+        "warnings": [],
+        "contraindications": [],
+        "safety_notes": ["Traditional genitourinary and metabolic formulation"],
+        "limitations": ["Not for acute anuric renal failure or severe obstructive uropathy"],
+        "provenance": {
+          "source_id": "SRC_API_PART2_VOL2_2008",
+          "document_title": "The Ayurvedic Pharmacopoeia of India, Part - II, Vol - II",
+          "page": 157,
+          "section": "37. Goksuradi Guggulu (AFI, Part-I, 5:3)",
+          "excerpt": "Therapeutic uses: Prameha (increased frequency and turbidity of urine); Mutrakrcchra (dysuria); Mutraghata (urinary obstruction); Asmari (calculus); Pradara; Vatarakta (gout); Vataroga; Sukra Dosa. Dose: 2 - 3 g daily in divided doses."
+        }
+      },
+      {
+        "record_id": "API2_FORM_046_TRIPHALA_GUGGULU",
+        "name": "Triphala Guggulu",
+        "aliases": ["Triphala Guggul"],
+        "botanical_name": null,
+        "record_type": "pharmacopoeial_formulation",
+        "authority_level": "primary_official",
+        "evidence_type": "official_pharmacopoeial",
+        "formulation_form": "Guggulu Vati (Pill / Tablet)",
+        "ingredients": ["Terminalia chebula (Haritaki)", "Terminalia belerica (Bibhitaka)", "Emblica officinalis (Amalaki)", "Piper longum (Pippali)", "Commiphora wightii (Shuddha Guggulu)"],
+        "traditional_indications": ["sotha", "inflammation", "bhagandara", "fistula-in-ano", "arsa", "piles", "haemorrhoids", "gulma", "abdominal lump"],
+        "indication_details": [
+          {"indication": "inflammation", "preparation": "Pill / Vati", "source_dosage": "2-3 g daily in divided doses"},
+          {"indication": "piles", "preparation": "Pill / Vati", "source_dosage": "2-3 g daily in divided doses"}
+        ],
+        "preparation_method": "Triphala and Pippali fine powders compounded with Shuddha Guggulu, pounded with Ghrita, dried in tray-dryer.",
+        "source_dosage_info": "2-3 g daily in divided doses.",
+        "anupana": "Warm water",
+        "warnings": [],
+        "contraindications": [],
+        "safety_notes": ["Traditional anti-inflammatory and anorectal supportive formulation"],
+        "limitations": ["Clinical examination required for bleeding anorectal conditions"],
+        "provenance": {
+          "source_id": "SRC_API_PART2_VOL2_2008",
+          "document_title": "The Ayurvedic Pharmacopoeia of India, Part - II, Vol - II",
+          "page": 189,
+          "section": "46. Triphala Guggulu (AFI, Part-I, 5:5)",
+          "excerpt": "Therapeutic uses: Sotha (inflammation); Bhagandara (fistula-in-ano); Arsa (piles); Gulma (abdominal lump). Dose: 2-3 g daily in divided doses. Anupana: Warm water."
+        }
+      },
+      {
+        "record_id": "API2_FORM_051_KSHARASUTRA",
+        "name": "Ksharasutra",
+        "aliases": ["Ksarasutra", "Medicated Seton Thread"],
+        "botanical_name": null,
+        "record_type": "pharmacopoeial_formulation",
+        "authority_level": "primary_official",
+        "evidence_type": "official_pharmacopoeial",
+        "formulation_form": "Medicated device / surgical seton thread",
+        "ingredients": ["Linen thread (gauge 20)", "Euphorbia neriifolia latex (Snuhi Kshira)", "Achyranthes aspera water-soluble ash (Apamarga Kshara)", "Curcuma longa rhizome powder (Haridra)"],
+        "traditional_indications": ["bhagandara", "fistula-in-ano", "nadivrana", "sinus", "arsa", "haemorrhoids", "dusta nadivrana", "non-healing ulcers", "vidradhi", "abscess", "arbuda", "yoni arsa"],
+        "indication_details": [
+          {"indication": "fistula-in-ano", "preparation": "Medicated linen thread coated with 21 coatings of Snuhi, Apamarga Kshara, and Haridra", "source_dosage": "Procedural application by qualified Ayurvedic surgeon"}
+        ],
+        "preparation_method": "Surgical linen thread size 20 coated in Ksharasutra cabinet: 11 coatings Snuhi latex, 7 coatings Snuhi + Apamarga Kshara, 3 coatings Snuhi + Haridra powder (total 21 coatings), UV sterilized.",
+        "source_dosage_info": "Surgical seton application under clinical protocol; thread changed weekly by surgeon.",
+        "anupana": "N/A (Surgical Device)",
+        "warnings": ["Procedural device; requires specialized operative technique under aseptic conditions."],
+        "contraindications": [
+          "Sinuses connected with osteomyelitis of pelvic bones or femur",
+          "Tuberculosis of hip joint or spine",
+          "Intra-abdominal cold abscesses",
+          "Chronic or acute ulcerative colitis",
+          "Crohn's disease",
+          "Regional ileitis",
+          "Appendicitis",
+          "Intestinal and pelvic malignancies",
+          "Venereal diseases",
+          "Urethral sinuses due to stricture",
+          "Rectovaginal fistula (RVF) and vesicovaginal fistula (VVF)"
+        ],
+        "safety_notes": ["Strictly contraindicated in osteomyelitis, TB spine/hip, Crohn's, ulcerative colitis, and pelvic malignancies. Competent surgeon decision required."],
+        "limitations": ["Procedural surgical intervention; cannot be self-administered or prescribed as an OTC home remedy"],
+        "provenance": {
+          "source_id": "SRC_API_PART2_VOL2_2008",
+          "document_title": "The Ayurvedic Pharmacopoeia of India, Part - II, Vol - II",
+          "page": 209,
+          "section": "51. Ksarasutra (AFI, Susruta Samhita Cikitsasthana 17/26-30, Cakradatta 148)",
+          "excerpt": "Therapeutic uses: Bhagandara (Fistula-in-ano), Nadivrana (sinuses), Arsa (haemorrhoids). Contraindications: Sinuses connected with Osteomyelitis, TB of hip/spine, Ulcerative colitis, Crohn's disease, pelvic malignancies. Note: Competent surgeon should make judicious decision."
+        }
+      }
+    ],
+    "SRC_ECAM_REVIEW_2013": [
+      {
+        "record_id": "ECAM_REV_001_NUTRACEUTICAL_PLANTS",
+        "name": "Nutraceutical Medicinal Plants Review",
+        "aliases": ["eCAM 2013 Review", "Indian Traditional Ayurvedic System & Nutritional Supplementation"],
+        "botanical_name": null,
+        "record_type": "secondary_literature",
+        "authority_level": "secondary",
+        "evidence_type": "secondary_review",
+        "formulation_form": "Literature review / nutraceutical potential overview",
+        "ingredients": ["Asparagus racemosus (Shatavari)", "Commiphora mukul (Guggul)", "Cyperus scariosus (Nagarmusta)", "Garcinia cambogia", "Glycyrrhiza glabra (Yashtimadhu)", "Gymnema sylvestre (Gurmar)", "Melia azadirachta (Neem)", "Momordica charantia (Karela)", "Moringa pterygosperma (Shigru)", "Mucuna pruriens (Kiwanch)", "Nardostachys jatamansi", "Piper longum (Pippali)", "Piper nigrum (Maricha)", "Bergenia ligulata (Pasanabheda)", "Terminalia chebula (Haritaki)", "Tinospora cordifolia (Guduchi)", "Withania somnifera (Ashwagandha)", "Zingiber officinale (Sunthi)"],
+        "traditional_indications": ["general debility", "immunocare", "digestive support", "nutritional supplementation", "respiratory stimulation", "metabolic support"],
+        "indication_details": [
+          {"indication": "general debility", "preparation": "Traditional herbal formulas and dietary supplements", "source_dosage": "Literature summary"}
+        ],
+        "preparation_method": "Scientific review of published ethnopharmacological literature and nutraceutical concepts.",
+        "source_dosage_info": "Summary literature ratios (e.g. 3-4 gm powder in traditional literature cited in review).",
+        "anupana": "Water, milk, honey (literature survey)",
+        "warnings": ["Secondary evidence only. Does not constitute official pharmacopoeial formulation standard."],
+        "contraindications": [],
+        "safety_notes": ["Secondary literature evidence; must not independently trigger patient-specific clinical recommendations."],
+        "limitations": ["Scientific overview paper; serves as background evidence only."],
+        "provenance": {
+          "source_id": "SRC_ECAM_REVIEW_2013",
+          "document_title": "Evidence-Based Complementary and Alternative Medicine, Vol 2013, Article ID 376327",
+          "page": 4,
+          "section": "Table 2: Common medicinal plants having nutraceutical potential and primary use in traditional medicine",
+          "excerpt": "Nutraceuticals, foods or food components that help in prevention or treatment of disease, are made from herbal/botanical raw materials... Ashwagandha used for thousands of years as restorative agent for general debility."
+        }
+      }
+    ]
+  }
+}
+

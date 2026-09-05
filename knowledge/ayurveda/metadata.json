@@ -1,0 +1,56 @@
+{
+  "system_name": "VaidyaArc Controlled Ayurveda Knowledge System",
+  "version": "phase8b_v1",
+  "approved_sources": [
+    {
+      "source_id": "SRC_CCRAS_HOME_REMEDIES_2005",
+      "title": "Ayurvedic Home Remedies",
+      "organization_author": "Central Council for Research in Ayurveda and Siddha (CCRAS), Department of ISM&H, Ministry of Health & Family Welfare, Govt of India",
+      "publication_year": "2005",
+      "source_type": "official_practical_reference",
+      "authority_level": "primary_official",
+      "intended_use": "Practical home remedy knowledge and household dietary recipes for mild/chronic complaints",
+      "limitations": "Home remedy recipes intended for mild conditions; advises consulting a doctor if no relief within 2-3 days; non-prescriptive",
+      "filename": "Ayurvedic-Home-Remedies-English.pdf",
+      "provenance_policy": "Direct extraction linked to page number, plant name, and specific indication block"
+    },
+    {
+      "source_id": "SRC_API_PART2_VOL2_2008",
+      "title": "The Ayurvedic Pharmacopoeia of India, Part - II (Formulations), Volume - II",
+      "organization_author": "Government of India, Ministry of Health and Family Welfare, Department of AYUSH",
+      "publication_year": "2008",
+      "source_type": "official_pharmacopoeial_reference",
+      "authority_level": "primary_official",
+      "intended_use": "Official statutory standards, formulation compositions, manufacturing processes, and classical therapeutic uses",
+      "limitations": "Pharmacopoeial monographs; doses represent average adult guidance from AFI and are non-binding on prescribers; not patient-specific prescriptions",
+      "filename": "API-II-Vol-2.pdf",
+      "provenance_policy": "Direct extraction linked to monograph name, category, page number, formula composition, and AFI reference"
+    },
+    {
+      "source_id": "SRC_ECAM_REVIEW_2013",
+      "title": "Indian Traditional Ayurvedic System of Medicine and Nutritional Supplementation",
+      "organization_author": "M. M. Pandey, Subha Rastogi, and A. K. S. Rawat (CSIR-NBRI, Lucknow, India); Evidence-Based Complementary and Alternative Medicine (eCAM)",
+      "publication_year": "2013",
+      "source_type": "secondary_literature",
+      "authority_level": "secondary",
+      "intended_use": "Secondary review of ethnopharmacological claims, plant nutraceutical properties, and traditional formulation literature",
+      "limitations": "Secondary background review; cannot independently trigger patient-specific clinical recommendations",
+      "filename": "ECAM2013-376327.pdf",
+      "provenance_policy": "Direct extraction linked to article table/section and page number; marked strictly as secondary evidence"
+    }
+  ],
+  "excluded_sources": [
+    {
+      "source_id": "SRC_EXCLUDED_FOURTH",
+      "status": "intentionally_excluded",
+      "reason": "Fourth Ayurveda source is unreviewed and intentionally excluded from Phase 8B"
+    }
+  ],
+  "governance_rules": {
+    "source_hierarchy": "primary_official > secondary",
+    "zero_invention": "No remedy, indication, ingredient, or citation may be created outside the approved documents",
+    "safety_lock": "Emergency red-flag or critical clinical risk automatically blocks recommendation",
+    "dosage_policy": "Source dosage notes are stored purely as reference excerpts and never formatted as prescriptions"
+  }
+}
+
