@@ -5,6 +5,10 @@ Comprehensive test suite for Phase 3 case representation.
 Tests all 5 use cases from specification.
 """
 
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from app.workflow import build_vaidyaarc_graph
 from app.clinical_case_node import clinical_case_representation
 
@@ -254,7 +258,7 @@ case4 = result4.get("clinical_case")
 assert case4 is not None, "Clinical case should exist"
 assert result4.get("clinical_case_output", {}).get("case_ready_for_review") is True, "Case should be ready for review"
 assert case4.get("care_pathway_status") == "urgent", f"Expected urgent, got {case4.get('care_pathway_status')}"
-assert case4.get("risk_assessment", {}).get("risk_level") == "HIGH", "Risk level should be HIGH"
+assert case4.get("risk_assessment", {}).get("risk_level") == "HIGH", f"Risk level should be HIGH, got {case4.get('risk_assessment', {}).get('risk_level')}"
 assert case4.get("patient_identifier", {}).get("age") == 72, "Age should be 72"
 assert "diabetes" in case4.get("patient_identifier", {}).get("known_conditions", []), "Diabetes should be in known conditions"
 assert "hypertension" in case4.get("patient_identifier", {}).get("known_conditions", []), "Hypertension should be in known conditions"
