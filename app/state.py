@@ -107,6 +107,10 @@ class VaidyaArcState(TypedDict, total=False):
     # Phase 10: Advanced Risk Convergence
     advanced_risk_output: Optional[dict[str, Any]]
 
+    # Phase 11: Clinical Summary & Consultation Questions
+    clinical_summary: Optional[dict[str, Any]]
+    consultation_questions: Optional[dict[str, Any]]
+
     # Future outputs
     recommendations: list[str]
     physician_report: Optional[str]
