@@ -103,6 +103,7 @@ class StructuredClinicalOutputDTO(BaseModel):
     ayurveda_modern_representation: Optional[dict[str, Any]] = Field(default=None, description="Phase 7 dual-perspective representation")
     ayurveda_recommendation: Optional[dict[str, Any]] = Field(default=None, description="Phase 8B controlled Ayurveda remedy recommendations")
     longitudinal_context: Optional[dict[str, Any]] = Field(default=None, description="Phase 9 longitudinal patient context bundle")
+    advanced_risk_assessment: Optional[dict[str, Any]] = Field(default=None, description="Phase 10 advanced risk convergence bundle")
     provenance_notes: list[str] = Field(default_factory=list, description="System traceability metadata")
 
 

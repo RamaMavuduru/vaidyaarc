@@ -104,6 +104,9 @@ class VaidyaArcState(TypedDict, total=False):
     # Phase 9: Longitudinal Patient Intelligence
     longitudinal_context: Optional[dict[str, Any]]
 
+    # Phase 10: Advanced Risk Convergence
+    advanced_risk_output: Optional[dict[str, Any]]
+
     # Future outputs
     recommendations: list[str]
     physician_report: Optional[str]

@@ -25,6 +25,7 @@ from app.follow_up_node import patient_monitoring
 from app.ayurveda_modern_node import ayurveda_modern_representation
 from app.ayurveda_recommendation import evaluate_ayurveda_recommendations
 from app.longitudinal_timeline import synthesize_longitudinal_context
+from app.advanced_risk_engine import evaluate_advanced_risk
 
 from app.normalized_schemas import (
 
@@ -123,6 +124,9 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
         long_ctx_dto = synthesize_longitudinal_context(state)
         long_ctx = long_ctx_dto.model_dump()
 
+    adv_risk_output = evaluate_advanced_risk(state)
+    adv_risk_dict = adv_risk_output.model_dump()
+
     provenance_notes = [
         "Phase 2A deterministic safety rules (app/red_flag_rules.py)",
         "Phase 2B deterministic risk convergence scoring (phase2b_v1)",
@@ -132,6 +136,7 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
         "Phase 7 Ayurveda descriptive taxonomy (AYURVEDA_KB_V1)",
         "Phase 8B controlled Ayurveda knowledge retrieval and safety gate",
         "Phase 9 deterministic longitudinal patient context & biomarker engine",
+        "Phase 10 deterministic advanced risk convergence (app/advanced_risk_engine.py)",
     ]
 
     intake_summary = {
@@ -172,6 +177,7 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
         ayurveda_modern_representation=state.get("ayurveda_modern_output"),
         ayurveda_recommendation=ayurveda_rec_dict,
         longitudinal_context=long_ctx,
+        advanced_risk_assessment=adv_risk_dict,
         provenance_notes=provenance_notes,
     )
 
