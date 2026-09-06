@@ -26,6 +26,8 @@ class NormalizedMessageDTO(BaseModel):
 
 class PatientProfileDTO(BaseModel):
     """Baseline patient profile context."""
+    model_config = {"extra": "allow"}
+
     age: Optional[int] = Field(default=None, ge=0, le=130, description="Patient age in years")
     sex: Optional[str] = Field(default=None, description="Patient sex/gender ('male', 'female', 'other')")
     medical_conditions: list[str] = Field(default_factory=list, description="Known chronic conditions (e.g. 'Hypertension')")
@@ -106,6 +108,7 @@ class StructuredClinicalOutputDTO(BaseModel):
     advanced_risk_assessment: Optional[dict[str, Any]] = Field(default=None, description="Phase 10 advanced risk convergence bundle")
     clinical_summary: Optional[dict[str, Any]] = Field(default=None, description="Phase 11 physician-ready clinical summary")
     consultation_questions: Optional[dict[str, Any]] = Field(default=None, description="Phase 11 patient consultation questions bundle")
+    dashavidha_atura_pariksha: Optional[dict[str, Any]] = Field(default=None, description="Phase 12 classical Dashavidha Atura Pariksha 10-parameter representation")
     provenance_notes: list[str] = Field(default_factory=list, description="System traceability metadata")
 
 

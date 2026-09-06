@@ -27,6 +27,7 @@ from app.ayurveda_recommendation import evaluate_ayurveda_recommendations
 from app.longitudinal_timeline import synthesize_longitudinal_context
 from app.advanced_risk_engine import evaluate_advanced_risk
 from app.clinical_summary_engine import generate_clinical_summary_bundle
+from app.dashavidha_engine import evaluate_dashavidha_atura_pariksha
 
 from app.normalized_schemas import (
 
@@ -133,6 +134,10 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
     clin_sum_dict = summary_bundle.clinical_summary.model_dump()
     cons_q_dict = summary_bundle.consultation_questions.model_dump()
 
+    # Phase 12: Dashavidha Atura Pariksha
+    dashavidha_output = evaluate_dashavidha_atura_pariksha(state)
+    dashavidha_dict = dashavidha_output.model_dump()
+
     provenance_notes = [
         "Phase 2A deterministic safety rules (app/red_flag_rules.py)",
         "Phase 2B deterministic risk convergence scoring (phase2b_v1)",
@@ -144,6 +149,7 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
         "Phase 9 deterministic longitudinal patient context & biomarker engine",
         "Phase 10 deterministic advanced risk convergence (app/advanced_risk_engine.py)",
         "Phase 11 deterministic clinical summary & consultation questions engine",
+        "Phase 12 deterministic Dashavidha Atura Pariksha representation engine",
     ]
 
     intake_summary = {
@@ -187,6 +193,7 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
         advanced_risk_assessment=adv_risk_dict,
         clinical_summary=clin_sum_dict,
         consultation_questions=cons_q_dict,
+        dashavidha_atura_pariksha=dashavidha_dict,
         provenance_notes=provenance_notes,
     )
 

@@ -111,6 +111,9 @@ class VaidyaArcState(TypedDict, total=False):
     clinical_summary: Optional[dict[str, Any]]
     consultation_questions: Optional[dict[str, Any]]
 
+    # Phase 12: Dashavidha Atura Pariksha
+    dashavidha_atura_pariksha: Optional[dict[str, Any]]
+
     # Future outputs
     recommendations: list[str]
     physician_report: Optional[str]
