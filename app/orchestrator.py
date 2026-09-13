@@ -98,12 +98,25 @@ def _build_initial_state_from_input(dto: NormalizedClinicalInputDTO) -> VaidyaAr
     # If previous turn state snapshot is provided, merge it
     if dto.state_snapshot and isinstance(dto.state_snapshot, dict):
         state.update(dto.state_snapshot)
+        # Preserve previous question for entity extraction context
+        prev_q = (
+            dto.state_snapshot.get("conversation_message")
+            or dto.state_snapshot.get("next_question")
+            or dto.state_snapshot.get("adaptive_question")
+        )
+        if prev_q:
+            state["previous_question"] = prev_q
         # Ensure current message and turn context are updated
         state["current_message"] = english_msg
         state["original_transcript"] = dto.message.original_text
         state["original_language"] = dto.message.original_language
         state["normalized_english"] = dto.message.english_text
         state["translation_provenance"] = dto.message.provenance
+        # Reset turn-level response slots so they never carry over stale questions from previous turns
+        state["conversation_message"] = None
+        state["next_question"] = None
+        state["adaptive_question"] = None
+        state["candidate_question"] = None
         if dto.state_snapshot.get("information_complete"):
             state["information_complete_snapshot"] = True
 
@@ -120,26 +133,27 @@ def evaluate_early_safety_check(state: VaidyaArcState) -> dict[str, Any]:
     eval_state["information_complete"] = True
     base_result = dict(evaluate_red_flag_rules(eval_state))
 
-    from app.services.clinical_governance import tier1_emergency_precheck
-    msg = state.get("current_message") or ""
-    t1 = tier1_emergency_precheck(msg)
-    if t1:
-        rf_list = list(base_result.get("red_flags") or [])
-        if t1["red_flag"] not in rf_list:
-            rf_list.insert(0, t1["red_flag"])
+    if not base_result.get("immediate_attention_required"):
+        from app.services.clinical_governance import tier1_emergency_precheck
+        msg = state.get("current_message") or ""
+        t1 = tier1_emergency_precheck(msg)
+        if t1:
+            rf_list = list(base_result.get("red_flags") or [])
+            if t1["red_flag"] not in rf_list:
+                rf_list.insert(0, t1["red_flag"])
 
-        ev_list = list(base_result.get("red_flag_evidence") or [])
-        if t1["trigger_phrase"] not in ev_list:
-            ev_list.insert(0, t1["trigger_phrase"])
+            ev_list = list(base_result.get("red_flag_evidence") or [])
+            if t1["trigger_phrase"] not in ev_list:
+                ev_list.insert(0, t1["trigger_phrase"])
 
-        hits = list(base_result.get("red_flag_rule_hits") or [])
-        hits.insert(0, {"rule_id": "TIER1_EMERGENCY", "red_flag": t1["red_flag"]})
+            hits = list(base_result.get("red_flag_rule_hits") or [])
+            hits.insert(0, {"rule_id": "TIER1_EMERGENCY", "red_flag": t1["red_flag"]})
 
-        base_result["red_flag_status"] = "red_flags_detected"
-        base_result["red_flags"] = rf_list
-        base_result["red_flag_evidence"] = ev_list
-        base_result["immediate_attention_required"] = True
-        base_result["red_flag_rule_hits"] = hits
+            base_result["red_flag_status"] = "red_flags_detected"
+            base_result["red_flags"] = rf_list
+            base_result["red_flag_evidence"] = ev_list
+            base_result["immediate_attention_required"] = True
+            base_result["red_flag_rule_hits"] = hits
 
     return base_result
 
@@ -167,6 +181,9 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
     summary_bundle = generate_clinical_summary_bundle(state)
     clin_sum_dict = summary_bundle.clinical_summary.model_dump()
     cons_q_dict = summary_bundle.consultation_questions.model_dump()
+    casesheet_md = summary_bundle.casesheet_markdown or state.get("casesheet_markdown") or state.get("clinical_casesheet")
+    if casesheet_md:
+        clin_sum_dict["casesheet_markdown"] = casesheet_md
 
     # Phase 12: Dashavidha Atura Pariksha
     dashavidha_output = evaluate_dashavidha_atura_pariksha(state)
@@ -183,6 +200,7 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
         "Phase 9 deterministic longitudinal patient context & biomarker engine",
         "Phase 10 deterministic advanced risk convergence (app/advanced_risk_engine.py)",
         "Phase 11 deterministic clinical summary & consultation questions engine",
+        "Phase 11 11-section clinical case-sheet synthesis",
         "Phase 12 deterministic Dashavidha Atura Pariksha representation engine",
     ]
 
@@ -228,6 +246,7 @@ def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutpu
         clinical_summary=clin_sum_dict,
         consultation_questions=cons_q_dict,
         dashavidha_atura_pariksha=dashavidha_dict,
+        casesheet_markdown=casesheet_md,
         provenance_notes=provenance_notes,
     )
 

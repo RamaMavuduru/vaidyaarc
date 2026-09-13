@@ -109,6 +109,7 @@ class StructuredClinicalOutputDTO(BaseModel):
     clinical_summary: Optional[dict[str, Any]] = Field(default=None, description="Phase 11 physician-ready clinical summary")
     consultation_questions: Optional[dict[str, Any]] = Field(default=None, description="Phase 11 patient consultation questions bundle")
     dashavidha_atura_pariksha: Optional[dict[str, Any]] = Field(default=None, description="Phase 12 classical Dashavidha Atura Pariksha 10-parameter representation")
+    casesheet_markdown: Optional[str] = Field(default=None, description="Standard 11-section Clinical Case-Sheet in Markdown")
     provenance_notes: list[str] = Field(default_factory=list, description="System traceability metadata")
 
 

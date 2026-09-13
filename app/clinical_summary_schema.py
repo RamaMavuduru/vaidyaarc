@@ -108,5 +108,6 @@ class Phase11ClinicalSummaryOutputDTO(BaseModel):
     """
     clinical_summary: ClinicalSummaryDTO = Field(..., description="Physician-facing clinical summary")
     consultation_questions: ConsultationQuestionsDTO = Field(..., description="Patient-facing consultation questions")
+    casesheet_markdown: Optional[str] = Field(default=None, description="Standard 11-section clinical case-sheet in Markdown")
     provenance_notes: list[str] = Field(default_factory=list, description="Audit provenance log")
 

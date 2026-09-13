@@ -282,7 +282,8 @@ def _extract_location(value: str):
     if "lower part" in lowered or "lower stomach" in lowered or "lower abdomen" in lowered:
         return "lower abdomen"
     if "in my " in lowered:
-        return re.sub(r"^.*?in my ", "", lowered).strip()
+        matched = re.sub(r"^.*?in my ", "", lowered).strip()
+        return re.split(r"[.;,]", matched)[0].strip()
     return None
 
 
@@ -318,8 +319,27 @@ def _canonicalize_chief_complaint(text: str | None) -> str | None:
         r"^(?:patient\s+reports|patient\s+presents\s+with(?::)?|presenting\s+complaint(?::)?)\s*",
         r"^(?:i\s+have|i\s+am\s+having|i\s+had|i\s+was\s+having|i\s+have\s+been\s+having|i\s+have\s+a)\s*",
         r"^(?:it\s+is\s+a|it\s+is|it's\s+a|it's|this\s+is\s+a|this\s+is|there\s+is\s+a|there\s+is)\s*",
+        r"^(?:my|the)\s+",
     ]
     candidate = cleaned
+
+    cleaned_lower = cleaned.lower()
+    # Idiomatic / colloquial pain expressions (e.g. "feet are just killing me", "my legs are killing me")
+    if "killing me" in cleaned_lower or "hurting bad" in cleaned_lower or "hurting terribly" in cleaned_lower:
+        if "knee" in cleaned_lower:
+            return "knee pain"
+        elif "foot" in cleaned_lower or "feet" in cleaned_lower:
+            return "foot pain"
+        elif "leg" in cleaned_lower:
+            return "leg pain"
+        elif "back" in cleaned_lower:
+            return "lower back pain"
+        elif "head" in cleaned_lower:
+            return "headache"
+        elif "stomach" in cleaned_lower or "abdomen" in cleaned_lower:
+            return "abdominal pain"
+        return "pain"
+
     for pattern in filler_prefixes:
         candidate = re.sub(pattern, "", candidate, flags=re.IGNORECASE).strip()
 
@@ -1723,9 +1743,12 @@ def evaluate_red_flags(state: VaidyaArcState):
     result = evaluate_red_flag_rules(state)
 
     closing_message = (
-        "Thank you. Your clinical intake and assessment are complete. "
-        "I have organized your details into a clinical summary for the doctor. "
-        "If there are any other things you want to describe to me as you wait, please feel free to go on with that."
+        state.get("conversation_message")
+        or (
+            "Thank you. Your clinical intake and assessment are complete. "
+            "I have organized your details into a clinical summary for the doctor. "
+            "If there are any other things you want to describe to me as you wait, please feel free to go on with that."
+        )
     )
 
     completion_state = {

@@ -127,7 +127,8 @@ def merge_finding_attributes(
     """
     attribute_keys = [
         "anatomical_site", "laterality", "onset", "duration",
-        "severity", "character", "timing", "radiation"
+        "severity", "character", "timing", "radiation",
+        "triggers", "functional_impact"
     ]
     for attr in attribute_keys:
         inc_val = getattr(incoming, attr, None)

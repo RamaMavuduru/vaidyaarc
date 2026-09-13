@@ -96,6 +96,35 @@ def project_history_to_canonical_state(
     if pmh_findings:
         state["past_history_notes"] = "; ".join(pmh_findings)
 
+    # 4b. Rich Clinical History Fields
+    if history.chief_complaint and history.chief_complaint.laterality:
+        lat_attr = history.chief_complaint.laterality
+        if not getattr(lat_attr, "is_superseded", False) and lat_attr.current_value:
+            state["laterality"] = str(lat_attr.current_value)
+
+    if history.triggers_or_context and not getattr(history.triggers_or_context, "is_superseded", False):
+        state["triggers"] = str(history.triggers_or_context.current_value)
+    elif history.chief_complaint and history.chief_complaint.triggers and not getattr(history.chief_complaint.triggers, "is_superseded", False):
+        state["triggers"] = str(history.chief_complaint.triggers.current_value)
+
+    if history.functional_impact and not getattr(history.functional_impact, "is_superseded", False):
+        state["functional_impact"] = str(history.functional_impact.current_value)
+    elif history.chief_complaint and history.chief_complaint.functional_impact and not getattr(history.chief_complaint.functional_impact, "is_superseded", False):
+        state["functional_impact"] = str(history.chief_complaint.functional_impact.current_value)
+
+    if history.trauma_history and not getattr(history.trauma_history, "is_superseded", False):
+        state["trauma_history"] = str(history.trauma_history.current_value)
+
+    if history.relevant_past_episodes:
+        state["relevant_past_episodes"] = list(history.relevant_past_episodes)
+
+    if history.local_inflammatory_signs:
+        state["local_inflammatory_signs"] = dict(history.local_inflammatory_signs)
+
+    if history.casesheet_markdown:
+        state["casesheet_markdown"] = history.casesheet_markdown
+        state["clinical_casesheet"] = history.casesheet_markdown
+
     # 5. Epistemic Ledger and Turn Tracking
     state["evolving_clinical_history"] = history.model_dump()
     state["turn_count"] = history.turn_count

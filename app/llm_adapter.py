@@ -1016,8 +1016,10 @@ def _deterministic_adaptive_turn(current_message: str, current_state: dict) -> A
     question = None
     stage = "symptom_exploration"
 
-    # If open floor was already asked, or if 4 turns reached:
-    if is_open_floor_prompt or turn_count >= 4:
+    has_all_core_slots = bool(cc and dur and sev and (loc or nat or combined_assoc or current_state.get("missing_information") == ["severity"]))
+
+    # If open floor was already asked, or if 4 turns reached, or all core clinical slots are gathered:
+    if is_open_floor_prompt or turn_count >= 4 or has_all_core_slots:
         is_complete = True
         stage = "complete"
         question = (

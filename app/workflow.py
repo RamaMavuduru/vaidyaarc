@@ -153,7 +153,7 @@ def build_vaidyaarc_graph(enable_adaptive: Optional[bool] = None):
     Otherwise builds the legacy pipeline.
     """
     if enable_adaptive is None:
-        enable_adaptive = os.getenv("VAIDYAARC_ENABLE_ADAPTIVE_INTAKE", "false").lower() in ("true", "1")
+        enable_adaptive = os.getenv("VAIDYAARC_ENABLE_ADAPTIVE_INTAKE", "true").lower() in ("true", "1")
 
     if enable_adaptive:
         return build_adaptive_graph()

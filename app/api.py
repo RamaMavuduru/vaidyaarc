@@ -9,6 +9,9 @@ Directly delegates turn execution to app.orchestrator.process_turn().
 Contains ZERO clinical logic, rules, or state manipulation.
 """
 
+import os
+os.environ.setdefault("VAIDYAARC_ENABLE_ADAPTIVE_INTAKE", "true")
+
 from typing import Any
 import uvicorn
 from fastapi import FastAPI, HTTPException, status

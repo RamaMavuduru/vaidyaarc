@@ -103,6 +103,8 @@ class ClinicalFinding(BaseModel):
     radiation: Optional[VersionedAttribute] = None
     aggravating_factors: List[VersionedAttribute] = Field(default_factory=list)
     relieving_factors: List[VersionedAttribute] = Field(default_factory=list)
+    triggers: Optional[VersionedAttribute] = None
+    functional_impact: Optional[VersionedAttribute] = None
     
     status_evidence: AttributeEvidence
     superseded_attributes: List[VersionedAttribute] = Field(default_factory=list)
@@ -172,6 +174,11 @@ class EvolvingClinicalHistory(BaseModel):
     medications_disclosed: List[ClinicalFinding] = Field(default_factory=list)
     allergies_disclosed: List[ClinicalFinding] = Field(default_factory=list)
     functional_impact: Optional[VersionedAttribute] = None
+    relevant_past_episodes: List[Dict[str, Any]] = Field(default_factory=list)
+    trauma_history: Optional[VersionedAttribute] = None
+    triggers_or_context: Optional[VersionedAttribute] = None
+    local_inflammatory_signs: Dict[str, Any] = Field(default_factory=dict)
+    casesheet_markdown: Optional[str] = None
     
     conversation_turns: List[ConversationTurn] = Field(default_factory=list)
     prior_question_intents: List[str] = Field(

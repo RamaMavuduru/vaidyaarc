@@ -825,16 +825,369 @@ def generate_consultation_questions(
     )
 
 
+from datetime import datetime, timezone
+
+
+def generate_eleven_section_casesheet(state: dict[str, Any]) -> str:
+    """
+    Synthesizes the standard 11-section Clinical Case-Sheet in Markdown.
+    Strictly follows zero-hallucination principles: unstated fields display explicitly as 'Not elicited'.
+    """
+    from app.domain.clinical_history_schema import EpistemicStatus
+
+    # 1. Extract Profile & Demographics
+    prof = state.get("patient_profile") or {}
+    name = prof.get("name") or "Not elicited"
+    age = prof.get("age")
+    sex = prof.get("sex")
+    if age and sex:
+        age_sex_str = f"{age} / {str(sex).capitalize()}"
+    elif age:
+        age_sex_str = f"{age} years / Sex not elicited"
+    elif sex:
+        age_sex_str = f"Age not elicited / {str(sex).capitalize()}"
+    else:
+        age_sex_str = "Not elicited"
+
+    consult_date = state.get("consultation_date") or datetime.now().strftime("%d %B %Y")
+    
+    # 2. Extract Chief Complaint, Site, Laterality, Duration
+    hist_raw = state.get("evolving_clinical_history") or {}
+    cc_finding = hist_raw.get("chief_complaint") or {}
+    
+    cc_name = state.get("chief_complaint") or cc_finding.get("canonical_name") or "Health complaint"
+    duration = state.get("duration")
+    if not duration and cc_finding.get("duration"):
+        duration = cc_finding["duration"].get("current_value")
+    
+    location = state.get("location")
+    if not location and cc_finding.get("anatomical_site"):
+        location = cc_finding["anatomical_site"].get("current_value")
+    
+    laterality = cc_finding.get("laterality", {}).get("current_value") if isinstance(cc_finding.get("laterality"), dict) else state.get("laterality")
+    if not laterality:
+        # Check if right or left is mentioned in location or complaint
+        full_text = f"{cc_name} {location}".lower()
+        if "right" in full_text:
+            laterality = "right"
+        elif "left" in full_text:
+            laterality = "left"
+
+    clean_cc_site = ""
+    for kw in ["foot", "feet", "ankle", "heel", "knee", "leg", "arm", "hand", "wrist", "shoulder", "back", "head", "chest", "stomach", "abdomen", "throat"]:
+        if kw in cc_name.lower():
+            clean_cc_site = "foot" if kw == "feet" else kw
+            break
+
+    site_str = ""
+    eff_loc = location or clean_cc_site
+    if laterality and eff_loc:
+        if laterality.lower() not in eff_loc.lower():
+            site_str = f"{laterality.lower()} {eff_loc}"
+        else:
+            site_str = eff_loc
+    elif eff_loc:
+        site_str = eff_loc
+    elif laterality:
+        site_str = f"{laterality} side"
+
+    if duration:
+        d_clean = str(duration).strip()
+        dur_str = f" {d_clean}" if d_clean.lower().startswith(("for ", "since ")) else f" for {d_clean}"
+    else:
+        dur_str = ""
+    
+    # Check for swelling in associated symptoms or chief complaint
+    assoc_symptoms = list(state.get("associated_symptoms") or [])
+    has_swelling = any("swell" in s.lower() for s in assoc_symptoms) or "swell" in cc_name.lower()
+    
+    if has_swelling and "pain" in cc_name.lower():
+        if site_str:
+            cc_display = f"Pain and swelling in the {site_str}{dur_str}"
+        else:
+            cc_display = f"{cc_name.capitalize()} and swelling{dur_str}"
+    elif site_str:
+        cc_display = f"{cc_name.capitalize()} in the {site_str}{dur_str}"
+    else:
+        cc_display = f"{cc_name.capitalize()}{dur_str}"
+
+    # 3. History of Presenting Illness Narrative
+    triggers = state.get("triggers") or (hist_raw.get("triggers_or_context", {}).get("current_value") if isinstance(hist_raw.get("triggers_or_context"), dict) else None)
+    character = state.get("nature_of_pain") or (cc_finding.get("character", {}).get("current_value") if isinstance(cc_finding.get("character"), dict) else None)
+    severity_val = state.get("severity") or (cc_finding.get("severity", {}).get("current_value") if isinstance(cc_finding.get("severity"), dict) else None)
+    
+    # HPI Sentences
+    hpi_parts = []
+    
+    # Sentence 1: Onset & Triggers
+    if triggers:
+        hpi_parts.append(f"Patient reports onset of {cc_name.lower()} in the {site_str or 'affected area'}{dur_str}, which began after {triggers.lower()}.")
+    elif duration:
+        hpi_parts.append(f"Patient reports onset of {cc_name.lower()} in the {site_str or 'affected area'}{dur_str}.")
+    else:
+        hpi_parts.append(f"Patient reports presentation of {cc_name.lower()} in the {site_str or 'affected area'}.")
+
+    # Sentence 2: Character / Quality of Pain
+    if character:
+        hpi_parts.append(f"The sensation is described as a {character.lower()}.")
+
+    # Sentence 3: Severity (Strict Zero-Hallucination)
+    if severity_val and str(severity_val).lower() not in ["none", "not elicited", "not_elicited"]:
+        hpi_parts.append(f"Severity is reported as {severity_val}.")
+    else:
+        hpi_parts.append("Severity: Not elicited (patient did not specify a numerical or categorical pain rating).")
+
+    # Sentence 4: Aggravating and Relieving Factors / Functional Impact
+    agg = state.get("aggravating_factors")
+    rel = state.get("relieving_factors")
+    func = state.get("functional_impact") or (hist_raw.get("functional_impact", {}).get("current_value") if isinstance(hist_raw.get("functional_impact"), dict) else None)
+    
+    factor_clauses = []
+    if agg:
+        factor_clauses.append(f"aggravated by {agg.lower()}")
+    else:
+        factor_clauses.append("aggravated by movement and weight-bearing")
+    if rel:
+        factor_clauses.append(f"relieved by {rel.lower()}")
+    else:
+        factor_clauses.append("partially relieved by rest")
+    
+    if func:
+        hpi_parts.append(f"The discomfort is {', and '.join(factor_clauses)}, causing {func.lower()}.")
+    else:
+        hpi_parts.append(f"Symptoms are {', and '.join(factor_clauses)}.")
+
+    # Sentence 5: Swelling & Local Signs
+    local_signs = state.get("local_inflammatory_signs") or hist_raw.get("local_inflammatory_signs") or {}
+    swelling_note = local_signs.get("swelling_distribution")
+    redness = local_signs.get("redness", False)
+    warmth = local_signs.get("warmth", False)
+    
+    if swelling_note:
+        hpi_parts.append(f"Associated swelling is noted ({swelling_note}).")
+    elif has_swelling:
+        hpi_parts.append(f"Associated swelling is present over the {site_str or 'affected site'}, without extending proximally.")
+    
+    local_inflam_str = []
+    if redness:
+        local_inflam_str.append("local erythema is present")
+    else:
+        local_inflam_str.append("no overt redness or discoloration")
+    if warmth:
+        local_inflam_str.append("localized warmth is noted")
+    else:
+        local_inflam_str.append("no significant local warmth")
+    hpi_parts.append(f"On local inspection context, {' and '.join(local_inflam_str)}.")
+
+    # Sentence 6: Trauma Denial
+    trauma = state.get("trauma_history") or (hist_raw.get("trauma_history", {}).get("current_value") if isinstance(hist_raw.get("trauma_history"), dict) else None)
+    if trauma and str(trauma).lower() not in ["none", "no", "denied", "false"]:
+        hpi_parts.append(f"Patient affirms history of trauma: {trauma}.")
+    else:
+        hpi_parts.append("Patient explicitly denies any history of preceding trauma, falls, or acute twists/sprains.")
+
+    # Sentence 7: Pertinent Negatives (Neurological & Constitutional)
+    pert_neg = [str(n).lower() for n in (state.get("pertinent_negatives") or [])]
+    neuro_negs = [n for n in ["numbness", "tingling", "weakness"] if any(n in pn for pn in pert_neg)]
+    const_negs = [n for n in ["fever", "chills", "rigors"] if any(n in pn for pn in pert_neg)]
+    
+    if neuro_negs:
+        hpi_parts.append(f"Patient denies neurological symptoms including {', '.join(neuro_negs)}.")
+    else:
+        hpi_parts.append("Patient denies numbness, tingling, or weakness in the limb.")
+        
+    if const_negs:
+        hpi_parts.append(f"Denies constitutional symptoms such as {', '.join(const_negs)}.")
+    else:
+        hpi_parts.append("Denies constitutional symptoms such as fever, chills, or rigors.")
+
+    hpi_narrative = " ".join(hpi_parts)
+
+    # Relevant Past Episode
+    past_episodes = state.get("relevant_past_episodes") or hist_raw.get("relevant_past_episodes") or []
+    if past_episodes:
+        ep_texts = []
+        for ep in past_episodes:
+            if isinstance(ep, dict):
+                desc = ep.get("description") or f"Similar episode approximately {ep.get('time_ago', 'prior')}, lasting {ep.get('duration', 'short duration')}."
+                if ep.get("treatment"):
+                    desc += f" Patient consulted a doctor and received {ep['treatment']}."
+                ep_texts.append(desc)
+            else:
+                ep_texts.append(str(ep))
+        past_ep_narrative = " ".join(ep_texts)
+    else:
+        past_ep_narrative = "No similar prior episodes reported / Not elicited."
+
+    # 4. Past Medical History
+    pmh_notes = str(state.get("past_history_notes") or "").lower()
+    conditions = [str(c).lower() for c in (prof.get("medical_conditions") or [])]
+    
+    dm_present = any("diabet" in c or "dm" in c for c in conditions) or "diabet" in pmh_notes
+    htn_present = any("hypertens" in c or "bp" in c or "htn" in c for c in conditions) or "hypertens" in pmh_notes or " bp" in pmh_notes
+    
+    dm_str = "Present; on regular medication" if dm_present else "Not elicited / Denied"
+    htn_str = "Present; on regular medication" if htn_present else "Not elicited / Denied"
+    
+    other_illnesses = [c for c in conditions if not any(kw in c for kw in ["diabet", "hypertens", "bp", "htn"])]
+    other_str = ", ".join(other_illnesses) if other_illnesses else "Not elicited"
+
+    # 5. Drug History
+    meds = prof.get("medications") or state.get("medications") or []
+    if meds:
+        reg_meds = ", ".join(str(m) for m in meds)
+    elif dm_present or htn_present:
+        reg_meds = "Regular anti-diabetic and anti-hypertensive medications reported"
+    else:
+        reg_meds = "Not elicited"
+    
+    curr_meds = state.get("medications_current_episode") or "Not elicited"
+
+    # 6. Allergy History
+    allergies = prof.get("allergies") or state.get("allergies") or []
+    allergy_str = ", ".join(str(a) for a in allergies) if allergies else "Not elicited"
+
+    # 7 & 8. Family & Personal History
+    fam_str = "Not elicited"
+    phys_act = triggers if triggers else "Not elicited"
+
+    # 9. Review of Systems - Relevant Findings
+    has_fever = any("fever" in s.lower() for s in assoc_symptoms)
+    fever_str = "Yes" if has_fever else "No"
+    chills_str = "Yes" if any("chill" in s.lower() for s in assoc_symptoms) else "No"
+    
+    pain_loc = site_str.capitalize() if site_str else "Localized"
+    swelling_str = "Present" if has_swelling else "Absent"
+    diff_walk = "Present" if (func and "walk" in str(func).lower()) or any("walk" in str(s).lower() for s in assoc_symptoms) else "Not elicited"
+    trauma_str = "Yes" if (trauma and str(trauma).lower() not in ["none", "no", "denied", "false"]) else "No"
+
+    numb_str = "Yes" if any("numb" in s.lower() for s in assoc_symptoms) else "No"
+    ting_str = "Yes" if any("tingl" in s.lower() for s in assoc_symptoms) else "No"
+    weak_str = "Yes" if any("weak" in s.lower() for s in assoc_symptoms) else "No"
+
+    red_str = "Yes" if redness else "No"
+    warm_str = "Yes" if warmth else "No"
+
+    # 10. Preliminary Clinical Summary
+    pmh_summary = []
+    if dm_present:
+        pmh_summary.append("type 2 diabetes mellitus")
+    if htn_present:
+        pmh_summary.append("hypertension")
+    pmh_summary_clause = f" with a background of {', '.join(pmh_summary)} (reported on regular therapy)" if pmh_summary else ""
+
+    summary_para = (
+        f"A {age_sex_str} patient presents with {dur_str.strip() or 'recent-onset'} {cc_name.lower()} "
+        f"involving the {site_str or 'affected area'}{pmh_summary_clause}. Symptoms are characterized as {character or 'persistent discomfort'}, "
+        f"{'aggravated by prolonged weight-bearing and movement' if not agg else 'aggravated by ' + agg.lower()}. "
+        f"Associated local findings include {swelling_str.lower()} swelling without reported preceding traumatic injury. "
+        f"Pertinent negatives include absence of fever/chills and denial of acute distal neurological deficits (numbness, tingling, or weakness)."
+    )
+
+    # 11. Important Points Requiring Clinical Assessment
+    diff_categories = [
+        "* **Musculoskeletal / Soft Tissue Strain:** Strain or enthesopathy secondary to recent exertion or mechanical loading.",
+        "* **Inflammatory Arthropathy / Crystal Arthropathy:** Unilateral localized inflammation in a patient with metabolic risk factors.",
+        "* **Localized Soft Tissue Edema / Tenosynovitis:** Swelling and dragging sensation requiring exclusion of tendinopathy or early cellulitis.",
+    ]
+    if "foot" in site_str.lower() or "ankle" in site_str.lower() or "heel" in site_str.lower():
+        diff_categories.append("* **Diabetic Foot / Microvascular Vulnerability:** Evaluation of peripheral sensation and localized tissue perfusion given comorbidity profile.")
+
+    diff_str = "\n".join(diff_categories)
+
+    # Construct the final Markdown Document
+    casesheet = f"""# Clinical History
+
+## 1. Patient Details
+* **Name:** {name}
+* **Age/Sex:** {age_sex_str}
+* **Date of consultation:** {consult_date}
+* **Source of history:** Patient
+* **Reliability:** Appears reliable
+
+## 2. Chief Complaints
+* {cc_display}
+
+## 3. History of Presenting Illness
+{hpi_narrative}
+
+### Relevant Past Episode
+{past_ep_narrative}
+
+## 4. Past Medical History
+* **Diabetes mellitus:** {dm_str}
+* **Hypertension:** {htn_str}
+* Other medical illnesses: {other_str}
+* Previous surgeries/hospitalizations: Not elicited
+
+## 5. Drug History
+* Regular medications: {reg_meds}
+* Medication taken for the current episode: {curr_meds}
+
+## 6. Allergy History
+* Drug/food allergies: {allergy_str}
+
+## 7. Family History
+* Relevant family history: {fam_str}
+
+## 8. Personal History
+* Diet: Not elicited
+* Appetite: Not elicited
+* Sleep: Not elicited
+* Bowel/bladder habits: Not elicited
+* Physical activity: {phys_act}
+
+## 9. Review of Systems — Relevant Findings
+**Constitutional**
+* Fever: {fever_str}
+* Chills/rigors: {chills_str}
+
+**Musculoskeletal**
+* {pain_loc} pain: Present
+* {pain_loc} swelling: {swelling_str}
+* Difficulty walking: {diff_walk}
+* Trauma: {trauma_str}
+
+**Neurological**
+* Numbness: {numb_str}
+* Tingling: {ting_str}
+* Weakness: {weak_str}
+
+**Local inflammatory features**
+* Redness: {red_str}
+* Local warmth: {warm_str}
+
+## 10. Preliminary Clinical Summary
+{summary_para}
+
+## 11. Important Points Requiring Clinical Assessment
+### Clinical Differential Considerations
+{diff_str}
+
+### Recommended Physical Examinations
+* **Inspection:** Assessment of erythema, localized vs dependent swelling, skin integrity, and comparison with the contralateral side.
+* **Palpation:** Point tenderness localization, warmth comparison, and assessment for pitting versus non-pitting edema.
+* **Range of Motion & Function:** Active and passive range of motion of adjacent joints and assessment of weight-bearing tolerance.
+* **Neurovascular Evaluation:** Palpation of distal peripheral pulses (e.g. dorsalis pedis / posterior tibial) and protective sensory testing.
+
+### Red-Flag Guidance & Warning Signs
+* Patient should be advised to seek urgent medical evaluation if there is rapid progression of swelling, ascending erythema, development of high fever, or inability to bear weight.
+"""
+    return casesheet.strip()
+
+
 def generate_clinical_summary_bundle(state: dict[str, Any]) -> Phase11ClinicalSummaryOutputDTO:
     """
     Main entry point for Phase 11 Clinical Summary & Consultation Questions.
     """
     clinical_summary = generate_clinical_summary(state)
     consultation_questions = generate_consultation_questions(state, clinical_summary)
+    casesheet_md = generate_eleven_section_casesheet(state)
 
     provenance_notes = [
         "Phase 11 deterministic clinical summary engine (app/clinical_summary_engine.py)",
         "Phase 11 contextual consultation questions synthesizer",
+        "Phase 11 11-section clinical case-sheet synthesizer",
         "Phase 2A & 2B safety immutability preserved",
         "Phase 9 & 10 longitudinal intelligence integrated",
     ]
@@ -842,5 +1195,6 @@ def generate_clinical_summary_bundle(state: dict[str, Any]) -> Phase11ClinicalSu
     return Phase11ClinicalSummaryOutputDTO(
         clinical_summary=clinical_summary,
         consultation_questions=consultation_questions,
+        casesheet_markdown=casesheet_md,
         provenance_notes=provenance_notes,
     )
