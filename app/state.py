@@ -32,11 +32,18 @@ class VaidyaArcState(TypedDict, total=False):
     nature_of_pain: Optional[str]
     location: Optional[str]
     associated_symptoms: list[str]
+    pertinent_negatives: list[str]
+    past_history_notes: Optional[str]
+    additional_patient_notes: Optional[str]
+    intake_stage: Optional[str]
 
     # Adaptive questioning
     missing_information: list[str]
     next_question: Optional[str]
+    adaptive_question: Optional[str]
+    is_complete: Optional[bool]
     information_complete: bool
+    information_complete_snapshot: Optional[bool]
     questions_asked: list[str]
 
     # Patient-facing response
@@ -117,4 +124,15 @@ class VaidyaArcState(TypedDict, total=False):
     # Future outputs
     recommendations: list[str]
     physician_report: Optional[str]
+
+    # Phase 13: Adaptive Clinical Intake & State Consolidation
+    evolving_clinical_history: Optional[dict[str, Any]]
+    clinical_delta: Optional[dict[str, Any]]
+    tier1_emergency_triggered: Optional[bool]
+    governance_sufficient: Optional[bool]
+    governance_rationale: Optional[str]
+    governance_verdict: Optional[str]
+    candidate_question: Optional[str]
+    turn_count: Optional[int]
+
 

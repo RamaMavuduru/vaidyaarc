@@ -268,16 +268,21 @@ def run_all_tests():
     print("=" * 75)
     print("VAIDYAARC PHASE 12 VALIDATION SUITE")
     print("=" * 75)
-    for test in tests:
-        try:
-            test()
-            print(f"PASS: {test.__name__}")
-            passed += 1
-        except Exception as e:
-            print(f"FAIL: {test.__name__} -> {e}")
-            import traceback
-            traceback.print_exc()
-            failed += 1
+    from app.llm_adapter import set_llm_adapter, reset_llm_adapter, DeterministicFallbackAdapter
+    set_llm_adapter(DeterministicFallbackAdapter())
+    try:
+        for test in tests:
+            try:
+                test()
+                print(f"PASS: {test.__name__}")
+                passed += 1
+            except Exception as e:
+                print(f"FAIL: {test.__name__} -> {e}")
+                import traceback
+                traceback.print_exc()
+                failed += 1
+    finally:
+        reset_llm_adapter()
 
     print("-" * 75)
     print(f"Total: {len(tests)} | Passed: {passed} | Failed: {failed}")

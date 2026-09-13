@@ -64,21 +64,25 @@ def _detect_conflicts(state: dict[str, Any]) -> list[str]:
 def build_chief_complaint_section(state: dict[str, Any]) -> ClinicalSummarySection:
     cc = _clean_str(state.get("chief_complaint"))
     if cc:
+        from app.nodes import _canonicalize_chief_complaint
+        clean_cc = _canonicalize_chief_complaint(cc) or cc
         return ClinicalSummarySection(
             section_name="Chief Complaint",
-            content=f"Patient presents with: {cc}.",
+            content=f"Patient presents with: {clean_cc}.",
             status="reported",
-            structured_data={"chief_complaint": cc},
+            structured_data={"chief_complaint": clean_cc},
             provenance=["intake_chief_complaint"],
         )
     
     msg = _clean_str(state.get("current_message"))
     if msg:
+        from app.nodes import _canonicalize_chief_complaint
+        clean_msg = _canonicalize_chief_complaint(msg) or msg
         return ClinicalSummarySection(
             section_name="Chief Complaint",
-            content=f"Primary presenting concern from intake message: '{msg}'.",
+            content=f"Primary presenting concern from intake message: '{clean_msg}'.",
             status="reported",
-            structured_data={"chief_complaint": msg},
+            structured_data={"chief_complaint": clean_msg},
             provenance=["current_message_fallback"],
         )
         
@@ -98,10 +102,16 @@ def build_hpi_section(state: dict[str, Any], conflicts: list[str]) -> ClinicalSu
     nature = _clean_str(state.get("nature_of_pain"))
     location = _clean_str(state.get("location"))
     assoc = state.get("associated_symptoms") or []
+    pertinent_negs = state.get("pertinent_negatives") or []
+    past_history = _clean_str(state.get("past_history_notes"))
+    addl_notes = _clean_str(state.get("additional_patient_notes"))
+
+    from app.nodes import _canonicalize_chief_complaint, _sanitize_associated_symptoms
+    clean_cc = _canonicalize_chief_complaint(cc) or cc if cc else None
 
     parts: list[str] = []
-    if cc:
-        parts.append(f"Patient reports {cc}")
+    if clean_cc:
+        parts.append(f"Patient reports {clean_cc.lower()}")
     else:
         parts.append("Patient reports presenting symptoms")
 
@@ -114,16 +124,25 @@ def build_hpi_section(state: dict[str, Any], conflicts: list[str]) -> ClinicalSu
     if severity:
         parts.append(f"rated as {severity} in severity")
 
-    if assoc:
-        clean_assoc = [str(s).strip() for s in assoc if str(s).strip()]
-        if clean_assoc:
-            parts.append(f"Associated symptoms include: {', '.join(clean_assoc)}")
+    clean_assoc = _sanitize_associated_symptoms(assoc)
+    if clean_assoc:
+        parts.append(f"Associated symptoms include: {', '.join(clean_assoc)}")
+
+    clean_negs = [str(n).strip() for n in pertinent_negs if str(n).strip()]
+    if clean_negs:
+        parts.append(f"Pertinent negatives (denied symptoms): {', '.join(clean_negs)}")
+
+    if past_history:
+        parts.append(f"Prior history / recurrence: {past_history}")
+
+    if addl_notes:
+        parts.append(f"Additional notes: {addl_notes}")
 
     missing = state.get("missing_information") or []
     if missing:
         parts.append(f"[Unreported HPI Elements: {', '.join(missing)}]")
 
-    if not cc and not duration and not severity and not nature and not location and not assoc:
+    if not cc and not duration and not severity and not nature and not location and not assoc and not clean_negs and not past_history and not addl_notes:
         return ClinicalSummarySection(
             section_name="History of Present Illness",
             content="No detailed history of present illness reported.",
@@ -148,6 +167,9 @@ def build_hpi_section(state: dict[str, Any], conflicts: list[str]) -> ClinicalSu
             "nature_of_pain": nature,
             "location": location,
             "associated_symptoms": assoc,
+            "pertinent_negatives": clean_negs,
+            "past_history_notes": past_history,
+            "additional_patient_notes": addl_notes,
             "missing_elements": missing,
         },
         provenance=["phase1b_intake_extraction"],
@@ -158,21 +180,34 @@ def build_pmh_section(state: dict[str, Any]) -> ClinicalSummarySection:
     profile = state.get("patient_profile") or {}
     conditions = profile.get("medical_conditions") or []
     clean_conds = [str(c).strip() for c in conditions if str(c).strip()]
+    past_notes = _clean_str(state.get("past_history_notes"))
 
+    parts: list[str] = []
+    provenance: list[str] = []
     if clean_conds:
+        parts.append(f"Documented chronic medical conditions: {', '.join(clean_conds)}.")
+        provenance.append("patient_profile_medical_conditions")
+    if past_notes:
+        parts.append(f"Patient reported past history / recurrence: {past_notes}.")
+        provenance.append("intake_past_history")
+
+    if parts:
         return ClinicalSummarySection(
             section_name="Past Medical History",
-            content=f"Documented chronic medical conditions: {', '.join(clean_conds)}.",
+            content=" ".join(parts),
             status="reported",
-            structured_data={"medical_conditions": clean_conds},
-            provenance=["patient_profile_medical_conditions"],
+            structured_data={
+                "medical_conditions": clean_conds,
+                "past_history_notes": past_notes,
+            },
+            provenance=provenance,
         )
 
     return ClinicalSummarySection(
         section_name="Past Medical History",
         content="Past medical history not reported or not available in patient profile.",
         status="not_reported",
-        structured_data={"medical_conditions": []},
+        structured_data={"medical_conditions": [], "past_history_notes": None},
         provenance=["patient_profile_unspecified"],
     )
 
@@ -333,22 +368,34 @@ def build_personal_social_section(state: dict[str, Any]) -> ClinicalSummarySecti
 
 def build_ros_section(state: dict[str, Any]) -> ClinicalSummarySection:
     assoc = state.get("associated_symptoms") or []
-    clean_assoc = [str(s).strip() for s in assoc if str(s).strip()]
+    from app.nodes import _sanitize_associated_symptoms
+    clean_assoc = _sanitize_associated_symptoms(assoc)
+    pertinent_negs = state.get("pertinent_negatives") or []
+    clean_negs = [str(n).strip() for n in pertinent_negs if str(n).strip()]
 
+    ros_parts = []
+    provenance = []
     if clean_assoc:
+        ros_parts.append(f"Positive review of systems findings reported: {', '.join(clean_assoc)}")
+        provenance.append("intake_associated_symptoms")
+    if clean_negs:
+        ros_parts.append(f"Documented pertinent negatives: {', '.join(clean_negs)}")
+        provenance.append("intake_pertinent_negatives")
+
+    if ros_parts:
         return ClinicalSummarySection(
             section_name="Review of Systems",
-            content=f"Positive review of systems findings reported: {', '.join(clean_assoc)}. Full systemic review not documented.",
+            content=f"{'. '.join(ros_parts)}. Full systemic review not documented.",
             status="reported",
-            structured_data={"positive_findings": clean_assoc},
-            provenance=["intake_associated_symptoms"],
+            structured_data={"positive_findings": clean_assoc, "negative_findings": clean_negs},
+            provenance=provenance,
         )
 
     return ClinicalSummarySection(
         section_name="Review of Systems",
         content="Review of systems not explicitly documented beyond primary complaint (system negatives not inferred).",
         status="not_reported",
-        structured_data={"positive_findings": []},
+        structured_data={"positive_findings": [], "negative_findings": []},
         provenance=["intake_unspecified"],
     )
 
@@ -496,15 +543,16 @@ def build_safety_and_risk_section(state: dict[str, Any]) -> ClinicalSummarySecti
     else:
         findings.append("No immediate emergency red flags detected.")
 
-    findings.append(f"Phase 2B Current Risk: {risk_level} (Score: {risk_score}/100)")
+    findings.append(f"Clinical Triage Risk: {risk_level} (Score: {risk_score}/100)")
     
     if composite_level != risk_level:
-        findings.append(f"Phase 10 Composite Risk: {composite_level} (Effective Pathway: {care_pathway.upper()})")
+        findings.append(f"Composite Risk: {composite_level} (Effective Pathway: {care_pathway.upper()})")
     else:
         findings.append(f"Effective Care Pathway: {care_pathway.upper()}")
 
     if risk_signals:
-        findings.append(f"Active risk signals: {', '.join(risk_signals)}")
+        formatted_signals = [s.replace("_", " ").title() for s in risk_signals]
+        findings.append(f"Active risk signals: {', '.join(formatted_signals)}")
 
     return ClinicalSummarySection(
         section_name="Current Safety and Risk Summary",
@@ -644,13 +692,15 @@ def generate_consultation_questions(
 
     # 2. Symptom Cause / Differential Exploration Question
     if cc:
+        from app.nodes import _canonicalize_chief_complaint
+        clean_cc_q = _canonicalize_chief_complaint(cc) or cc
         questions.append(ConsultationQuestionDTO(
             question_id="Q_SYMPTOM_CAUSE",
-            question=f"What potential underlying causes could explain my {cc}?",
+            question=f"What potential underlying causes could explain my {clean_cc_q.lower()}?",
             category="symptom_cause",
             rationale="Helps patient initiate diagnostic discussion regarding the chief complaint with the doctor.",
             priority="high",
-            source_evidence=[f"Chief complaint: {cc}"],
+            source_evidence=[f"Chief complaint: {clean_cc_q}"],
             provenance="intake_chief_complaint",
         ))
         generated_from.append("chief_complaint")

@@ -40,11 +40,17 @@ app.add_middleware(
 @app.get("/health", tags=["Health"])
 def health_check() -> dict[str, Any]:
     """Health & Readiness probe for the clinical brain service."""
+    from app.llm_adapter import get_active_provider_info
+    llm_info = get_active_provider_info()
     return {
         "status": "healthy",
         "service": "vaidyaarc-clinical-brain",
         "version": "1.0.0",
-        "phases": "1B-12.5",
+        "phases": "1B-13",
+        "active_llm_provider": llm_info["provider"],
+        "active_model": llm_info["model"],
+        "llm_cloud": llm_info["cloud"],
+        "llm_available": llm_info["available"],
     }
 
 

@@ -95,23 +95,30 @@ COMPLAINT_QUESTIONS = {
     "pain": {
         "chief_complaint": "What health problem are you experiencing?",
         "nature_of_pain": "Can you describe what the pain feels like?",
-        "location": "Where exactly are you feeling the pain?",
-        "duration": "When did this problem start?",
-        "severity": "How severe is the pain?",
+        "location": "Where exactly in your body are you feeling the pain?",
+        "duration": "When did this pain start or how long has it lasted?",
+        "severity": "How severe is the pain — would you describe it as mild, moderate, or severe?",
+    },
+    "burning pain": {
+        "chief_complaint": "What health problem are you experiencing?",
+        "nature_of_pain": "Can you describe what the burning sensation feels like?",
+        "location": "Where exactly are you feeling the burning pain?",
+        "duration": "When did this burning sensation start or how long has it lasted?",
+        "severity": "How severe is this discomfort — is it mild, moderate, or severe?",
     },
     "stomach pain": {
         "chief_complaint": "What health problem are you experiencing?",
         "nature_of_pain": "Can you describe what the pain feels like?",
         "location": "Where exactly are you feeling the pain?",
         "duration": "When did this problem start?",
-        "severity": "How severe is the pain?",
+        "severity": "How severe is the pain — is it mild, moderate, or severe?",
     },
     "abdominal pain": {
         "chief_complaint": "What health problem are you experiencing?",
         "nature_of_pain": "Can you describe what the pain feels like?",
         "location": "Where exactly are you feeling the pain?",
         "duration": "When did this problem start?",
-        "severity": "How severe is the pain?",
+        "severity": "How severe is the pain — is it mild, moderate, or severe?",
     },
 }
 
@@ -120,11 +127,12 @@ DEFAULT_QUESTIONS = {
     "chief_complaint": "What health problem are you experiencing?",
     "nature_of_pain": "Can you describe what the feeling is like?",
     "location": "Where exactly are you experiencing this?",
-    "duration": "When did this start?",
-    "severity": "How severe is this?",
+    "duration": "When did this start or how long have you had it?",
+    "severity": "How severe is this on a mild, moderate, or severe scale?",
 }
 
 model = ChatOllama(
+    base_url="http://127.0.0.1:11434",
     model="llama3:latest",
     temperature=0,
     format="json"
@@ -138,10 +146,19 @@ structured_model = model.with_structured_output(
 
 def _ollama_available() -> bool:
     try:
-        with urlopen("http://localhost:11434/api/tags", timeout=1) as response:
+        with urlopen("http://127.0.0.1:11434/api/tags", timeout=1) as response:
             return response.status == 200
     except Exception:
         return False
+
+
+WORD_NUMS = {
+    "one": "1", "two": "2", "three": "3", "four": "4", "five": "5",
+    "six": "6", "seven": "7", "eight": "8", "nine": "9", "ten": "10",
+    "eleven": "11", "twelve": "12"
+}
+NUM_PATTERN = r"[0-9]+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|a few|several|couple of"
+TIME_UNITS = r"days?|hours?|weeks?|months?|minutes?|years?"
 
 
 def _extract_duration(value: str):
@@ -149,40 +166,38 @@ def _extract_duration(value: str):
     if not text:
         return None
 
-    lowered = text.lower()
-    direct_patterns = [
-        "ago", "today", "yesterday", "morning", "afternoon", "evening", "night",
-        "since", "for", "days", "day", "hours", "hour", "weeks", "week",
-        "months", "month", "minutes", "minute", "started", "begin"
-    ]
+    raw = text.strip()
 
-    if any(keyword in lowered for keyword in direct_patterns):
-        if re.match(r"^(?:since|for|from)\b", lowered):
-            return text
+    # 1. 'since/from' + date/time marker (e.g. 'since yesterday', 'since this morning', 'from yesterday morning')
+    m_since = re.search(r"\b(since|from)\s+(yesterday(?:\s+morning|\s+evening|\s+night)?|today|this\s+morning|last\s+night|morning|evening|night)\b", raw, re.IGNORECASE)
+    if m_since:
+        return f"{m_since.group(1).lower()} {m_since.group(2).lower()}".strip()
 
-        complaint_prefix_pattern = re.compile(
-            r"^(?:i\s+have|i\s+am\s+having|i\s+had|i\s+was\s+having|i\s+have\s+a)\s+"
-            r"(?:severe|moderate|mild\s+)?(?:fever|cough|headache|stomach pain|abdominal pain|chest pain|nausea|vomiting)\s*"
-            r"(?:since|for|from)?\s*(.*)$",
-            re.IGNORECASE,
-        )
-        complaint_match = complaint_prefix_pattern.match(text)
-        if complaint_match:
-            candidate = complaint_match.group(1).strip()
-            if candidate:
-                return candidate
+    # 2. 'for/since/from/over the last/in the last' + number + unit (e.g. 'for 3 days', 'for three days', 'since 2 weeks')
+    m_prep = re.search(rf"\b(?:for|since|from|over the past|over the last|in the past|in the last)\s+({NUM_PATTERN})\s+({TIME_UNITS})\b", raw, re.IGNORECASE)
+    if m_prep:
+        num = m_prep.group(1).lower()
+        unit = m_prep.group(2).lower()
+        num_norm = WORD_NUMS.get(num, num)
+        return f"{num_norm} {unit}"
 
-        if re.match(r"^(?:i\s+have|i\s+am\s+having|i\s+had|i\s+was\s+having|i\s+have\s+a)\b", text, re.IGNORECASE):
-            candidate = re.sub(
-                r"^(?:i\s+have|i\s+am\s+having|i\s+had|i\s+was\s+having|i\s+have\s+a)\s+",
-                "",
-                text,
-                flags=re.IGNORECASE,
-            ).strip()
-            if candidate and candidate.lower() != lowered:
-                return candidate
+    # 3. Standalone number + unit (e.g. '3 days', 'three days', '2 weeks', '1 month', 'a few days')
+    m_unit = re.search(rf"\b({NUM_PATTERN})\s+({TIME_UNITS})\b", raw, re.IGNORECASE)
+    if m_unit:
+        num = m_unit.group(1).lower()
+        unit = m_unit.group(2).lower()
+        num_norm = WORD_NUMS.get(num, num)
+        return f"{num_norm} {unit}"
 
-        return text
+    # 4. Standalone temporal markers (e.g. 'yesterday', 'this morning', 'last night')
+    m_marker = re.search(r"\b(yesterday(?:\s+morning|\s+evening|\s+night)?|this\s+morning|last\s+night)\b", raw, re.IGNORECASE)
+    if m_marker:
+        return m_marker.group(1).lower()
+
+    # 5. Clean multi-word phrase starting with since/for (e.g. 'since 2 days ago')
+    if re.match(r"^(?:since|for|from)\b", raw.lower()) and len(raw.split()) <= 4:
+        if not any(kw in raw.lower() for kw in [",", ";", " and ", " but ", " with ", "fever", "pain", "severe", "moderate", "mild"]):
+            return raw
 
     return None
 
@@ -192,17 +207,45 @@ def _extract_severity(value: str):
     if not text:
         return None
     lowered = text.lower()
-    severity_map = {
-        "mild": "mild",
-        "moderate": "moderate",
-        "severe": "severe",
-        "very severe": "very severe",
-        "extreme": "extreme",
-        "high": "high",
-        "low": "low",
-        "intense": "intense",
-    }
-    for keyword, normalized in severity_map.items():
+    severity_mappings = [
+        ("very severe", "severe"),
+        ("extremely severe", "severe"),
+        ("excruciating", "severe"),
+        ("unbearable", "severe"),
+        ("agonizing", "severe"),
+        ("agony", "severe"),
+        ("10 out of 10", "severe"),
+        ("10/10", "severe"),
+        ("9/10", "severe"),
+        ("8/10", "severe"),
+        ("terrible", "severe"),
+        ("very bad", "severe"),
+        ("extreme", "severe"),
+        ("intense", "severe"),
+        ("severe", "severe"),
+        ("somewhat severe", "moderate"),
+        ("fairly bad", "moderate"),
+        ("tolerable", "moderate"),
+        ("manageable", "moderate"),
+        ("moderate", "moderate"),
+        ("medium", "moderate"),
+        ("average", "moderate"),
+        ("very mild", "mild"),
+        ("little bit", "mild"),
+        ("a little", "mild"),
+        ("not severe", "mild"),
+        ("not very bad", "mild"),
+        ("bearable", "mild"),
+        ("minimal", "mild"),
+        ("minimum", "mild"),
+        ("slight", "mild"),
+        ("slightly", "mild"),
+        ("minor", "mild"),
+        ("mild", "mild"),
+        ("low", "low"),
+        ("high", "high"),
+    ]
+    for keyword, normalized in severity_mappings:
         if keyword in lowered:
             return normalized
     return None
@@ -234,9 +277,137 @@ def _extract_location(value: str):
         return "chest"
     if "head" in lowered or "headache" in lowered:
         return "head"
+    if "upper part" in lowered or "upper stomach" in lowered or "upper abdomen" in lowered:
+        return "upper abdomen"
+    if "lower part" in lowered or "lower stomach" in lowered or "lower abdomen" in lowered:
+        return "lower abdomen"
     if "in my " in lowered:
         return re.sub(r"^.*?in my ", "", lowered).strip()
     return None
+
+
+SEVERITY_KEYWORDS_SET = {
+    "mild", "moderate", "severe", "very severe", "extreme", "intense", "high", "low",
+    "bad", "worse", "worsening", "good", "better", "minimal", "minimum", "slight",
+    "slightly", "bearable", "tolerable", "manageable", "minor", "excruciating", "unbearable"
+}
+
+TRAUMA_KEYWORDS = {
+    "hit", "bump", "bumped", "fell", "fall", "fallen", "blow", "accident",
+    "trauma", "injury", "injured", "struck", "collision", "knocked", "impact",
+    "cut", "bruise", "bruised", "bleeding"
+}
+
+
+def _has_trauma_context(text: str | None) -> bool:
+    if not text:
+        return False
+    lowered = text.lower()
+    return any(re.search(rf"\b{kw}\b", lowered) for kw in TRAUMA_KEYWORDS)
+
+
+def _canonicalize_chief_complaint(text: str | None) -> str | None:
+    if not text:
+        return None
+    cleaned = str(text).strip()
+    if not cleaned:
+        return None
+
+    # Strip conversational filler prefixes
+    filler_prefixes = [
+        r"^(?:patient\s+reports|patient\s+presents\s+with(?::)?|presenting\s+complaint(?::)?)\s*",
+        r"^(?:i\s+have|i\s+am\s+having|i\s+had|i\s+was\s+having|i\s+have\s+been\s+having|i\s+have\s+a)\s*",
+        r"^(?:it\s+is\s+a|it\s+is|it's\s+a|it's|this\s+is\s+a|this\s+is|there\s+is\s+a|there\s+is)\s*",
+    ]
+    candidate = cleaned
+    for pattern in filler_prefixes:
+        candidate = re.sub(pattern, "", candidate, flags=re.IGNORECASE).strip()
+
+    # Strip conversational trailing clauses like ", it is and it is moderate", " and it is moderate"
+    trailing_clauses = [
+        r"[,;]?\s*(?:and\s+)?it\s+is\s+(?:and\s+it\s+is\s+)?(?:mild|moderate|severe|very\s+severe|extreme|intense|bad|low|high).*$",
+        r"[,;]?\s*(?:and\s+)?it's\s+(?:mild|moderate|severe|very\s+severe|extreme|intense|bad|low|high).*$",
+        r"[,;]?\s*(?:rated\s+as|severity\s+is|scale\s+is)\s+(?:mild|moderate|severe|very\s+severe|extreme|intense|bad|low|high).*$",
+        r"[,;]?\s*(?:since|for)\s+\d+\s*(?:days?|hours?|weeks?|months?).*$",
+    ]
+    for pattern in trailing_clauses:
+        candidate = re.sub(pattern, "", candidate, flags=re.IGNORECASE).strip()
+
+    candidate = candidate.strip(".,;: -_")
+    lower_cand = candidate.lower()
+    cleaned_lower = cleaned.lower()
+
+    # Clinical check: differentiate trauma from spontaneous head complaint
+    if "head" in cleaned_lower:
+        if _has_trauma_context(cleaned_lower):
+            return "head injury"
+        if any(kw in cleaned_lower for kw in ["headache", "head pain", "pain in head", "pain in my head", "ache in head"]):
+            return "headache"
+        if lower_cand in {"head", "pain in head", "head pain", "pain in my head"}:
+            return "headache"
+
+    if not candidate or lower_cand in {"it", "this", "pain", "something", "problem", "issue", "moderate", "severe", "mild"}:
+        if "shiver" in cleaned_lower or "chills" in cleaned_lower:
+            return "shivering and chills"
+        if "burning" in cleaned_lower and "pain" in cleaned_lower:
+            return "burning pain"
+        if "sharp" in cleaned_lower and "pain" in cleaned_lower:
+            return "sharp pain"
+        if "cramping" in cleaned_lower and "pain" in cleaned_lower:
+            return "cramping pain"
+        if "throbbing" in cleaned_lower and "pain" in cleaned_lower:
+            return "throbbing pain"
+        if "chest" in cleaned_lower:
+            return "chest injury" if _has_trauma_context(cleaned_lower) else "chest pain"
+        if "stomach" in cleaned_lower or "abdomen" in cleaned_lower:
+            return "abdominal trauma" if _has_trauma_context(cleaned_lower) else "abdominal pain"
+        if "headache" in cleaned_lower:
+            return "headache"
+        if "fever" in cleaned_lower:
+            return "fever"
+        if "cough" in cleaned_lower:
+            return "cough"
+        if lower_cand == "pain":
+            return "pain"
+        return None
+
+    if "shiver" in cleaned_lower or "chills" in cleaned_lower:
+        return "shivering and chills"
+
+    if "head" in lower_cand:
+        if _has_trauma_context(lower_cand):
+            return "head injury"
+        if any(kw in lower_cand for kw in ["headache", "pain", "ache"]):
+            return "headache"
+
+    return candidate.lower()
+
+
+def _sanitize_associated_symptoms(symptoms) -> list[str]:
+    if not symptoms:
+        return []
+    cleaned: list[str] = []
+    seen: set[str] = set()
+    raw_list = symptoms if isinstance(symptoms, list) else [symptoms]
+    for s in raw_list:
+        if s is None:
+            continue
+        text = str(s).strip()
+        if not text:
+            continue
+        low = text.lower()
+        if low in {"none", "null", "nan", "nothing", "no", "no symptoms"}:
+            continue
+        if low in SEVERITY_KEYWORDS_SET or any(sk in low for sk in SEVERITY_KEYWORDS_SET):
+            continue
+        if any(dw in low for dw in ["day", "days", "hour", "hours", "week", "weeks", "month", "months", "since", "for"]):
+            continue
+        if low in {"pain", "stomach pain", "it", "this", "that", "upper part", "lower part"}:
+            continue
+        if low not in seen:
+            seen.add(low)
+            cleaned.append(text)
+    return cleaned
 
 
 def _fallback_extract_information(patient_message: str, previous_question: str):
@@ -252,6 +423,9 @@ def _fallback_extract_information(patient_message: str, previous_question: str):
     }
 
     complaint_map = [
+        "cold and shivering",
+        "shivering",
+        "chills",
         "stomach pain",
         "abdominal pain",
         "headache",
@@ -260,19 +434,54 @@ def _fallback_extract_information(patient_message: str, previous_question: str):
         "nausea",
         "vomiting",
         "chest pain",
+        "burning pain",
+        "sharp pain",
+        "pain",
+        "dizziness",
+        "fatigue",
+        "body pain",
+        "body ache",
+        "sore throat",
+        "rash",
     ]
 
-    severe_complaint_match = re.search(r"\b(severe|moderate|mild)\s+(stomach pain|abdominal pain|headache|fever|cough|nausea|vomiting|chest pain)\b", lower)
+    severe_complaint_match = re.search(r"\b(severe|moderate|mild)\s+(stomach pain|abdominal pain|headache|fever|cough|nausea|vomiting|chest pain|burning pain|pain|shivering|chills)\b", lower)
     if severe_complaint_match:
-        extracted["chief_complaint"] = severe_complaint_match.group(0).strip()
-    elif re.search(r"\bi have\b.*\b(stomach pain|abdominal pain|headache|fever|cough|nausea|vomiting|chest pain)\b", lower):
-        complaint = re.search(r"\b(stomach pain|abdominal pain|headache|fever|cough|nausea|vomiting|chest pain)\b", lower).group(1)
-        extracted["chief_complaint"] = complaint
+        extracted["chief_complaint"] = _canonicalize_chief_complaint(severe_complaint_match.group(0).strip())
+    elif re.search(r"\bi have\b.*\b(stomach pain|abdominal pain|headache|fever|cough|nausea|vomiting|chest pain|burning pain|pain|shivering|chills)\b", lower):
+        complaint = re.search(r"\b(stomach pain|abdominal pain|headache|fever|cough|nausea|vomiting|chest pain|burning pain|pain|shivering|chills)\b", lower).group(1)
+        extracted["chief_complaint"] = _canonicalize_chief_complaint(complaint)
+    elif "burning" in lower and "pain" in lower:
+        extracted["chief_complaint"] = "Burning pain"
+        extracted["nature_of_pain"] = "burning"
+    elif "shiver" in lower or "chills" in lower:
+        extracted["chief_complaint"] = "Shivering and chills"
+    elif "head" in lower and _has_trauma_context(lower):
+        extracted["chief_complaint"] = "head injury"
+    elif "head" in lower and any(kw in lower for kw in ["headache", "head pain", "pain in head", "pain in my head", "ache", "hurts"]):
+        extracted["chief_complaint"] = "headache"
     elif any(keyword in lower for keyword in complaint_map):
         for keyword in complaint_map:
             if keyword in lower:
-                extracted["chief_complaint"] = keyword
+                extracted["chief_complaint"] = _canonicalize_chief_complaint(keyword)
                 break
+
+    if not extracted["chief_complaint"] and not previous_question:
+        candidate_cc = _canonicalize_chief_complaint(message)
+        if candidate_cc:
+            extracted["chief_complaint"] = candidate_cc
+
+    detected_assoc = []
+    common_symptom_words = [
+        "fever", "cough", "headache", "nausea", "vomiting", "shivering", "chills",
+        "cold", "dizziness", "fatigue", "weakness", "body pain", "body ache",
+        "sore throat", "rash", "diarrhea"
+    ]
+    for sym in common_symptom_words:
+        if sym in lower:
+            if not extracted["chief_complaint"] or sym not in extracted["chief_complaint"].lower():
+                detected_assoc.append(sym)
+    extracted["associated_symptoms"] = _sanitize_associated_symptoms(detected_assoc)
 
     if previous_question:
         q_lower = previous_question.lower()
@@ -285,7 +494,7 @@ def _fallback_extract_information(patient_message: str, previous_question: str):
         if "how severe" in q_lower or "severity" in q_lower:
             extracted["severity"] = _extract_severity(message)
 
-    if extracted["severity"] is None and not extracted["chief_complaint"]:
+    if extracted["severity"] is None:
         severity = _extract_severity(message)
         if severity:
             extracted["severity"] = severity
@@ -332,227 +541,25 @@ def intake_brain(state: VaidyaArcState):
     patient_message = state.get("current_message", "")
     previous_question = state.get("conversation_message", "")
 
-    # Fresh-case protection: intake_brain never reads previously structured state values
-    # to build extracted_information. It only reads the current message and the immediately
-    # previous patient-facing question for short-answer interpretation.
-    prompt = f"""
-You are the Intake Information Extraction component of VaidyaArc.
-
-Extract ONLY new information explicitly stated by the patient in the CURRENT PATIENT MESSAGE.
-
-You are NOT diagnosing.
-You are NOT recommending treatment.
-You must NOT invent information.
-
-PREVIOUS QUESTION:
-{previous_question}
-
-CURRENT PATIENT MESSAGE:
-{patient_message}
-
-IMPORTANT RULES:
-
-1. Extract information only from the CURRENT PATIENT MESSAGE.
-2. The PREVIOUS QUESTION may only be used to understand what pronouns such as "it", "they", "this", or "that" refer to.
-3. Never copy values from previous conversation.
-4. If a field is not mentioned in the current message, return None.
-5. A patient may provide multiple pieces of information in one message. Extract ALL explicitly mentioned information.
-6. Do not write any permanent patient state here. Return data into the temporary extracted_information field only.
-7. Use the PREVIOUS QUESTION as the primary context for interpretation.
-8. Do not automatically convert a short answer into a new chief complaint.
-9. If the patient gives a short answer to a specific question, fill only the field being asked about unless they explicitly state a new main complaint.
-10. Never inherit old structured values such as burning, upper abdomen, or previous complaint text into a fresh extraction.
-
-FIELD PRIORITY BY PREVIOUS QUESTION:
-
-- If the previous question is about location, prioritize location extraction.
-- If the previous question is about severity, prioritize severity extraction.
-- If the previous question is about duration, prioritize duration extraction.
-- If the previous question is about nature of pain, prioritize nature_of_pain extraction.
-
-DURATION EXTRACTION - CRITICAL EXAMPLES:
-
-**ONLY extract duration when the PREVIOUS QUESTION is about timing/onset (e.g., "When did...", "When did...start", "How long...") OR when there is a clear temporal expression in the message.**
-
-**If PREVIOUS QUESTION is empty/blank/None, do NOT extract duration unless the patient explicitly uses phrases like "I started", "I began", "since", "for", etc. Do not extract introductory phrases like "I have" as duration.**
-
-PREVIOUS QUESTION:
-"When did this problem start?"
-CURRENT MESSAGE:
-"today morning"
-
-Expected:
-duration = "today morning"
-chief_complaint = None
-
-PREVIOUS QUESTION:
-"When did this problem start?"
-CURRENT MESSAGE:
-"this morning"
-
-Expected:
-duration = "this morning"
-chief_complaint = None
-
-PREVIOUS QUESTION:
-"When did this problem start?"
-CURRENT MESSAGE:
-"1 day ago"
-
-Expected:
-duration = "1 day ago"
-chief_complaint = None
-
-PREVIOUS QUESTION:
-"When did the fever start?"
-CURRENT MESSAGE:
-"since this morning"
-
-Expected:
-duration = "since this morning"
-chief_complaint = None
-
-PREVIOUS QUESTION:
-"When did this problem start?"
-CURRENT MESSAGE:
-"since yesterday"
-
-Expected:
-duration = "since yesterday"
-chief_complaint = None
-
-PREVIOUS QUESTION:
-"When did this problem start?"
-CURRENT MESSAGE:
-"for two days"
-
-Expected:
-duration = "for two days"
-chief_complaint = None
-
-PREVIOUS QUESTION:
-"When did this problem start?"
-CURRENT MESSAGE:
-"yesterday"
-
-Expected:
-duration = "yesterday"
-chief_complaint = None
-
-PREVIOUS QUESTION:
-(empty/blank - patient stating chief complaint)
-CURRENT MESSAGE:
-"I have fever"
-
-Expected:
-duration = None
-chief_complaint = "fever"
-
-PREVIOUS QUESTION:
-(empty/blank - patient stating chief complaint)
-CURRENT MESSAGE:
-"I have a cough"
-
-Expected:
-duration = None
-chief_complaint = "cough"
-
-OTHER EXAMPLES:
-
-PREVIOUS QUESTION:
-"Where exactly are you feeling the pain?"
-CURRENT MESSAGE:
-"In my upper abdomen"
-
-Expected:
-location = "upper abdomen"
-chief_complaint = None
-
-PREVIOUS QUESTION:
-"How severe is the pain?"
-CURRENT MESSAGE:
-"Moderate"
-
-Expected:
-severity = "moderate"
-chief_complaint = None
-
-PREVIOUS QUESTION:
-"When did this problem start?"
-CURRENT MESSAGE:
-"It started 2 days ago"
-
-Expected:
-duration = "2 days"
-chief_complaint = None
-
-PREVIOUS QUESTION:
-"Can you describe what the pain feels like?"
-CURRENT MESSAGE:
-"It feels like burning"
-
-Expected:
-nature_of_pain = "burning"
-chief_complaint = None
-
-CURRENT MESSAGE:
-"I have stomach pain"
-
-Expected:
-chief_complaint = "stomach pain"
-nature_of_pain = None
-location = None
-duration = None
-severity = None
-associated_symptoms = []
-
-CURRENT MESSAGE:
-"I have severe chest pain"
-
-Expected:
-chief_complaint = "severe chest pain"
-nature_of_pain = None
-location = None
-duration = None
-severity = None
-associated_symptoms = []
-
-IMPORTANT:
-
-Do NOT put descriptive words such as:
-
-* burning
-* sharp
-* dull
-* cramping
-
-into chief_complaint if they describe an existing pain.
-
-If the message is only a symptom description such as "burning sensation in my upper abdomen" without a clear complaint statement, then:
-- chief_complaint = None
-- nature_of_pain = "burning"
-- location = "upper abdomen"
-
-Do NOT treat a symptom description as a patient complaint unless the patient explicitly says they have a condition or problem.
-
-Do NOT put the main complaint inside associated_symptoms.
-
-associated_symptoms must contain only additional symptoms explicitly mentioned by the patient.
-
-Return only the structured schema.
-"""
-
-    if not _ollama_available():
+    from app.llm_adapter import get_llm_adapter
+    adapter = get_llm_adapter()
+    try:
+        adaptive_result = adapter.conduct_adaptive_turn(
+            current_message=patient_message,
+            conversation_history=state.get("conversation_history") or [],
+            current_state=state,
+        )
+        extracted = adaptive_result.model_dump()
+    except Exception:
         extracted = _fallback_extract_information(patient_message, previous_question)
-    else:
-        try:
-            result = structured_model.invoke(prompt)
-            extracted = result.model_dump()
-        except Exception:
-            extracted = _fallback_extract_information(patient_message, previous_question)
+        extracted["is_complete"] = False
+        extracted["adaptive_question"] = None
 
     previous_question = state.get("conversation_message", "")
     extracted = _contextualize_extraction(extracted, previous_question, patient_message)
+    if "adaptive_result" in locals() and hasattr(adaptive_result, "is_complete"):
+        extracted["is_complete"] = adaptive_result.is_complete
+        extracted["adaptive_question"] = adaptive_result.adaptive_question
 
     print("\nDEBUG - NEW INFORMATION EXTRACTED:")
     print(extracted)
@@ -633,24 +640,12 @@ def _contextualize_extraction(extracted, previous_question, patient_message):
         if complaint_severity:
             safe["severity"] = complaint_severity
 
+    if safe.get("duration"):
+        safe["duration"] = _extract_duration(safe["duration"])
+    if safe.get("duration") is None:
+        safe["duration"] = _extract_duration(message)
+
     if not question:
-        # No previous question context - be conservative about what we accept as duration
-        # Only accept if it looks like a genuine temporal expression
-        if safe.get("duration"):
-            duration_str = str(safe.get("duration")).lower()
-            valid_duration_keywords = {
-                "ago", "today", "yesterday", "morning", "evening", "night",
-                "hours", "hour", "days", "day", "weeks", "week", "months", "month",
-                "minutes", "minute", "seconds", "second",
-                "since", "for", "during", "from", "when", "started"
-            }
-            has_duration_keyword = any(kw in duration_str for kw in valid_duration_keywords)
-            if not has_duration_keyword:
-                safe["duration"] = None
-        if safe.get("duration") is None:
-            duration_match = re.search(r"\b(?:for|from|since)\s+([A-Za-z0-9 ]*(?:day|days|hour|hours|week|weeks|month|months|minute|minutes|morning|afternoon|evening|night))\b", message)
-            if duration_match:
-                safe["duration"] = duration_match.group(1).strip()
         return safe
 
     # Field correction: Check if values are in wrong fields
@@ -659,10 +654,37 @@ def _contextualize_extraction(extracted, previous_question, patient_message):
     # If severity is missing but duration looks like it's severity, move it
     if safe.get("severity") is None and safe.get("duration"):
         duration_val = str(safe.get("duration")).lower()
-        severity_keywords = {"mild", "moderate", "severe", "very severe", "extreme", "low", "high", "intense", "bad", "good", "worse", "worsening"}
-        if duration_val in severity_keywords or any(kw in duration_val for kw in severity_keywords):
+        if duration_val in SEVERITY_KEYWORDS_SET or any(kw in duration_val for kw in SEVERITY_KEYWORDS_SET):
             safe["severity"] = safe["duration"]
             safe["duration"] = None
+
+    # If location looks like severity, move it
+    if safe.get("location"):
+        loc_val = str(safe.get("location")).lower()
+        if loc_val in SEVERITY_KEYWORDS_SET or any(kw in loc_val for kw in SEVERITY_KEYWORDS_SET):
+            if safe.get("severity") is None:
+                safe["severity"] = safe["location"]
+            safe["location"] = None
+
+    # Clean and filter associated_symptoms
+    if safe.get("associated_symptoms"):
+        raw_assoc = safe["associated_symptoms"] if isinstance(safe["associated_symptoms"], list) else [safe["associated_symptoms"]]
+        for item in raw_assoc:
+            item_str = str(item).strip().lower()
+            if item_str in SEVERITY_KEYWORDS_SET or any(kw in item_str for kw in SEVERITY_KEYWORDS_SET):
+                if safe.get("severity") is None:
+                    safe["severity"] = item_str
+        safe["associated_symptoms"] = _sanitize_associated_symptoms(raw_assoc)
+
+    # Ensure chief_complaint is canonicalized
+    if safe.get("chief_complaint"):
+        safe["chief_complaint"] = _canonicalize_chief_complaint(safe["chief_complaint"])
+
+    # Fallback severity extraction from message text if still missing
+    if safe.get("severity") is None:
+        direct_sev = _extract_severity(message)
+        if direct_sev:
+            safe["severity"] = direct_sev
     
     # With previous question context, apply contextual resolution
     
@@ -675,7 +697,7 @@ def _contextualize_extraction(extracted, previous_question, patient_message):
     if "where" in question or "location" in question:
         if safe.get("chief_complaint") and safe.get("location"):
             safe["chief_complaint"] = None
-        if safe.get("location") is None and "upper abdomen" in message:
+        if safe.get("location") is None and ("upper abdomen" in message or "upper part" in message or "upper stomach" in message):
             safe["location"] = "upper abdomen"
         if safe.get("chief_complaint") and message.startswith("in my "):
             safe["chief_complaint"] = None
@@ -798,9 +820,11 @@ def _looks_like_severity_expression(value):
 
     severity_keywords = {
         "mild", "moderate", "severe", "very severe", "extreme",
-        "intense", "high", "low", "worse", "worsening", "bad"
+        "intense", "high", "low", "worse", "worsening", "bad",
+        "minimal", "minimum", "slight", "slightly", "bearable",
+        "tolerable", "manageable", "minor"
     }
-    return any(keyword in text for keyword in severity_keywords)
+    return _extract_severity(value) is not None or any(keyword in text for keyword in severity_keywords)
 
 
 def _matches_previous_question_context(previous_question, field, value):
@@ -884,23 +908,18 @@ def merge_intake_information(state: VaidyaArcState):
         new_value = extracted.get(field)
         normalized_new_value = _normalize_blank(new_value)
 
+        # If intake was already marked complete in the state snapshot, preserve existing structured slots
+        if state.get("information_complete") and existing_value is not None and field != "associated_symptoms":
+            merged_state[field] = existing_value
+            continue
+
         if field == "associated_symptoms":
-            filtered_new_items = []
-            if isinstance(normalized_new_value, list):
+            filtered_new_items = _sanitize_associated_symptoms(normalized_new_value)
+            if existing_chief_complaint:
                 filtered_new_items = [
-                    item for item in normalized_new_value
-                    if item and item.lower() not in {
-                        "none",
-                        "null",
-                        str(existing_chief_complaint).lower() if existing_chief_complaint else "",
-                        "stomach pain",
-                        "pain",
-                    }
+                    item for item in filtered_new_items
+                    if str(item).lower() != str(existing_chief_complaint).lower()
                 ]
-            elif normalized_new_value is not None:
-                filtered_new_items = [normalized_new_value]
-                if filtered_new_items[0].lower() in {"none", "null", str(existing_chief_complaint).lower() if existing_chief_complaint else "", "stomach pain", "pain"}:
-                    filtered_new_items = []
             merged_state[field] = _merge_unique_list(existing_value, filtered_new_items)
             continue
 
@@ -908,27 +927,60 @@ def merge_intake_information(state: VaidyaArcState):
             if normalized_new_value is None:
                 merged_state[field] = existing_value
                 continue
-            if _looks_like_symptom_description(normalized_new_value) or _is_likely_symptom_only(normalized_new_value):
+            canonical_new = _canonicalize_chief_complaint(normalized_new_value)
+            if not canonical_new:
                 merged_state[field] = existing_value
                 continue
-            if previous_question and _matches_previous_question_context(previous_question, "location", normalized_new_value):
+            if existing_chief_complaint and (_looks_like_symptom_description(canonical_new) or _is_likely_symptom_only(canonical_new)):
                 merged_state[field] = existing_value
                 continue
-            if previous_question and _matches_previous_question_context(previous_question, "severity", normalized_new_value):
+            if previous_question and _matches_previous_question_context(previous_question, "location", canonical_new):
                 merged_state[field] = existing_value
                 continue
-            if previous_question and _matches_previous_question_context(previous_question, "duration", normalized_new_value):
+            if previous_question and _matches_previous_question_context(previous_question, "severity", canonical_new):
                 merged_state[field] = existing_value
                 continue
-            if previous_question and _matches_previous_question_context(previous_question, "nature_of_pain", normalized_new_value):
+            if previous_question and _matches_previous_question_context(previous_question, "duration", canonical_new):
                 merged_state[field] = existing_value
                 continue
-            merged_state[field] = normalized_new_value
+            if previous_question and _matches_previous_question_context(previous_question, "nature_of_pain", canonical_new):
+                merged_state[field] = existing_value
+                continue
+            # If already have a valid chief complaint, preserve it and record any new symptom into associated_symptoms
+            if existing_chief_complaint:
+                if canonical_new.lower() != existing_chief_complaint.lower() and canonical_new.lower() not in {"pain", "problem", "discomfort"}:
+                    merged_state["associated_symptoms"] = _merge_unique_list(
+                        merged_state.get("associated_symptoms", []),
+                        [canonical_new]
+                    )
+                merged_state[field] = existing_chief_complaint
+                continue
+            merged_state[field] = canonical_new
             continue
 
         if normalized_new_value is None:
             merged_state[field] = existing_value
             continue
+
+        if field == "duration" and normalized_new_value:
+            clean_dur = _extract_duration(normalized_new_value)
+            if clean_dur:
+                merged_state[field] = clean_dur
+                continue
+
+        if field == "severity" and normalized_new_value:
+            clean_sev = _extract_severity(normalized_new_value)
+            raw_msg = f"{state.get('current_message', '')} {state.get('original_transcript', '')}".lower()
+            sev_kws = ["mild", "slight", "minimal", "little", "bearable", "manageable", "moderate", "tolerable", "medium", "average", "fair", "severe", "unbearable", "excruciating", "intense", "extreme", "terrible", "worst", "bad"]
+            if clean_sev and any(kw in raw_msg for kw in sev_kws):
+                merged_state[field] = clean_sev
+                continue
+            elif clean_sev and existing_value:
+                merged_state[field] = existing_value
+                continue
+            else:
+                merged_state[field] = existing_value
+                continue
 
         if previous_question and field in {"location", "severity", "duration", "nature_of_pain"}:
             if not _matches_previous_question_context(previous_question, field, normalized_new_value):
@@ -936,6 +988,57 @@ def merge_intake_information(state: VaidyaArcState):
                 continue
 
         merged_state[field] = normalized_new_value
+
+    # Smart clinical synthesis: if chief complaint is generic ("pain" or None) but location is known
+    cc = merged_state.get("chief_complaint")
+    loc = merged_state.get("location")
+    raw_utterances = f"{state.get('current_message', '')} {state.get('original_transcript', '')}"
+
+    if (not cc or cc.lower() in {"pain", "discomfort", "problem", "issue"}) and loc:
+        loc_lower = loc.lower()
+        has_trauma = _has_trauma_context(raw_utterances) or _has_trauma_context(loc_lower)
+        if "head" in loc_lower:
+            merged_state["chief_complaint"] = "head injury" if has_trauma else "headache"
+        elif "chest" in loc_lower:
+            merged_state["chief_complaint"] = "chest injury" if has_trauma else "chest pain"
+        elif any(ab in loc_lower for ab in ["abdomen", "stomach"]):
+            merged_state["chief_complaint"] = "abdominal trauma" if has_trauma else "abdominal pain"
+        elif "knee" in loc_lower:
+            merged_state["chief_complaint"] = f"{loc_lower} injury" if has_trauma else f"{loc_lower} pain"
+        else:
+            merged_state["chief_complaint"] = f"{loc_lower} injury" if has_trauma else f"{loc_lower} pain"
+
+    if not merged_state.get("chief_complaint") and merged_state.get("associated_symptoms"):
+        # Promote primary symptom to chief complaint if no CC was extracted
+        first_sym = merged_state["associated_symptoms"][0]
+        merged_state["chief_complaint"] = _canonicalize_chief_complaint(first_sym)
+
+    if "is_complete" in extracted:
+        merged_state["is_complete"] = extracted["is_complete"]
+    if "adaptive_question" in extracted and extracted["adaptive_question"]:
+        merged_state["adaptive_question"] = extracted["adaptive_question"]
+
+    if "pertinent_negatives" in extracted and extracted["pertinent_negatives"]:
+        existing_negs = merged_state.get("pertinent_negatives") or state.get("pertinent_negatives") or []
+        new_negs = [n for n in extracted["pertinent_negatives"] if n not in existing_negs]
+        merged_state["pertinent_negatives"] = existing_negs + new_negs
+    elif "pertinent_negatives" in state:
+        merged_state["pertinent_negatives"] = state["pertinent_negatives"]
+
+    if "past_history" in extracted and extracted["past_history"]:
+        merged_state["past_history_notes"] = extracted["past_history"]
+    elif "past_history_notes" in state:
+        merged_state["past_history_notes"] = state["past_history_notes"]
+
+    if "additional_notes" in extracted and extracted["additional_notes"]:
+        merged_state["additional_patient_notes"] = extracted["additional_notes"]
+    elif "additional_patient_notes" in state:
+        merged_state["additional_patient_notes"] = state["additional_patient_notes"]
+
+    if "intake_stage" in extracted and extracted["intake_stage"]:
+        merged_state["intake_stage"] = extracted["intake_stage"]
+    elif "intake_stage" in state:
+        merged_state["intake_stage"] = state["intake_stage"]
 
     merged_state["extracted_information"] = {}
     return merged_state
@@ -958,6 +1061,18 @@ def validate_patient_state(state: VaidyaArcState):
     else:
         validated["associated_symptoms"] = _merge_unique_list(validated["associated_symptoms"], [])
 
+    if "pertinent_negatives" not in validated or validated["pertinent_negatives"] is None:
+        validated["pertinent_negatives"] = []
+
+    if "past_history_notes" not in validated:
+        validated["past_history_notes"] = None
+
+    if "additional_patient_notes" not in validated:
+        validated["additional_patient_notes"] = None
+
+    if "intake_stage" not in validated:
+        validated["intake_stage"] = "symptom_exploration"
+
     for field in [
         "chief_complaint",
         "duration",
@@ -975,6 +1090,8 @@ def validate_patient_state(state: VaidyaArcState):
 
     if "information_complete" not in validated or validated["information_complete"] is None:
         validated["information_complete"] = False
+    elif validated["information_complete"]:
+        validated["information_complete_snapshot"] = True
 
     if "questions_asked" not in validated or validated["questions_asked"] is None:
         validated["questions_asked"] = []
@@ -995,14 +1112,29 @@ def _field_has_value(value):
 
 def determine_missing_information(state: VaidyaArcState):
     missing = []
-
     complaint = state.get("chief_complaint")
+    questions_asked = list(state.get("questions_asked") or [])
+
+    # If chief complaint is still missing, attempt resolution from current message
+    if not complaint:
+        msg = (state.get("current_message") or "").strip()
+        if msg:
+            candidate = _canonicalize_chief_complaint(msg)
+            if candidate:
+                state["chief_complaint"] = candidate
+                complaint = candidate
 
     if not complaint:
-        return {
-            "missing_information": ["chief_complaint"],
-            "information_complete": False
-        }
+        # If chief complaint was already asked, DO NOT LOOP!
+        if "chief_complaint" in questions_asked or len(questions_asked) >= 2:
+            msg = (state.get("current_message") or "").strip()
+            state["chief_complaint"] = msg.capitalize() if msg else "Reported discomfort"
+            complaint = state["chief_complaint"]
+        else:
+            return {
+                "missing_information": ["chief_complaint"],
+                "information_complete": False
+            }
 
     template = _find_complaint_template(complaint)
     required_fields = template["required_fields"] if template else FALLBACK_REQUIRED_FIELDS
@@ -1013,30 +1145,103 @@ def determine_missing_information(state: VaidyaArcState):
 
     information_complete = len(missing) == 0
 
+    # If adaptive intake is actively ongoing and has an adaptive follow-up question
+    # (e.g. asking about past history or open floor), do not prematurely mark complete!
+    adaptive_q = state.get("adaptive_question")
+    if adaptive_q and "Thank you. Your clinical intake and assessment are complete" not in adaptive_q:
+        if not state.get("is_complete") and not state.get("information_complete_snapshot"):
+            information_complete = False
+
+    # Anti-deadlock progression guard:
+    # If all currently missing required fields have already been asked once,
+    # or if we have reached the inquiry budget:
+    known_descriptors = sum(1 for k in ["nature_of_pain", "location", "duration", "severity"] if _field_has_value(state.get(k)))
+    assoc_count = len(state.get("associated_symptoms") or [])
+
+    if len(missing) > 0:
+        all_asked = all(f in questions_asked for f in missing)
+        if all_asked or (len(questions_asked) >= 3 and (known_descriptors >= 1 or assoc_count >= 1)) or len(questions_asked) >= 4:
+            missing = []
+            information_complete = True
+
     return {
         "missing_information": missing,
         "information_complete": information_complete
     }
 
 
+FORBIDDEN_QUESTION_TERMS = [
+    "tablet", "capsule", "mg", "syrup", "injection", "antibiotic",
+    "paracetamol", "ibuprofen", "aspirin", "steroid", "take this", "take some",
+    "prescribe", "prescription", "you might have", "sounds like you have",
+    "i think you have", "i believe you have", "diagnos"
+]
+
+
+def _validate_clinical_question(question: str | None, target_field: str, known_info: dict) -> bool:
+    """
+    Deterministic Python clinical validation for AI-generated questions.
+    Ensures:
+    1. Output is a non-empty string between 8 and 300 characters.
+    2. Ends with '?' for questions, or '.'/'?' for open-floor/closing invitations.
+    3. Contains no line breaks or run-on conversational filler.
+    4. Does not prescribe, give medical advice, or speculate diagnoses.
+    5. Does not re-ask information already confirmed in known_info.
+    """
+    if not isinstance(question, str):
+        return False
+    q = question.strip()
+    if len(q) < 8 or len(q) > 300:
+        return False
+    if "\n" in q:
+        return False
+
+    is_open_floor = any(phrase in q.lower() for phrase in ["describe to me", "go on with that", "anything else", "other things", "want to describe"])
+    if is_open_floor or target_field in {"open_floor", "closing", "follow_up"}:
+        if not (q.endswith("?") or q.endswith(".")):
+            return False
+    else:
+        if not q.endswith("?"):
+            return False
+
+    q_lower = q.lower()
+    for kw in FORBIDDEN_QUESTION_TERMS:
+        if kw in q_lower:
+            return False
+
+    # Prevent asking for information already confirmed in known state
+    if known_info.get("duration") and target_field != "duration":
+        if any(w in q_lower for w in ["how long", "when did", "since when", "how many days", "how many hours"]):
+            return False
+    if known_info.get("severity") and target_field != "severity":
+        if any(w in q_lower for w in ["scale of", "how severe", "intensity", "how bad"]):
+            return False
+    if known_info.get("location") and target_field != "location":
+        if any(w in q_lower for w in ["where exactly", "where is", "which part of your"]):
+            return False
+    if known_info.get("nature_of_pain") and target_field != "nature_of_pain":
+        if any(w in q_lower for w in ["what kind of pain", "describe the pain", "feel like"]):
+            return False
+
+    return True
+
+
 def select_next_question(state: VaidyaArcState):
     complaint = state.get("chief_complaint")
-    missing = []
+    missing = list(state.get("missing_information") or [])
+    questions_asked = list(state.get("questions_asked", []) or [])
 
-    if complaint:
-        template = _find_complaint_template(complaint)
-        required_fields = template["required_fields"] if template else FALLBACK_REQUIRED_FIELDS
-        missing = [field for field in required_fields if not _field_has_value(state.get(field))]
-    else:
-        missing = ["chief_complaint"]
-
-    if state.get("information_complete") or not missing:
+    if state.get("information_complete"):
         return {
             "next_question": None,
-            "questions_asked": list(state.get("questions_asked", []))
+            "questions_asked": questions_asked
         }
 
-    questions_asked = list(state.get("questions_asked", []) or [])
+    known_info = {}
+    for key in ["chief_complaint", "location", "nature_of_pain", "duration", "severity"]:
+        val = state.get(key)
+        if _field_has_value(val):
+            known_info[key] = val
 
     next_field = None
     for field in missing:
@@ -1044,12 +1249,26 @@ def select_next_question(state: VaidyaArcState):
             next_field = field
             break
 
-    if next_field is None:
+    # 1. Primary choice: Use the AI's adaptive question if present and valid
+    adaptive_q = state.get("adaptive_question")
+    if adaptive_q and _validate_clinical_question(adaptive_q, next_field or "follow_up", known_info):
+        updated_questions = list(questions_asked) + ([next_field] if next_field else ["adaptive_question"])
+        return {
+            "next_question": adaptive_q,
+            "questions_asked": updated_questions
+        }
+
+    if not missing:
         return {
             "next_question": None,
             "questions_asked": questions_asked
         }
 
+    # 2. If next_field is None (all missing were asked), avoid deadlocking:
+    if next_field is None:
+        next_field = missing[0] if missing else "general"
+
+    # 3. Deterministic fallback question from static templates
     if complaint:
         complaint_lower = complaint.lower()
         questions_for_complaint = None
@@ -1063,11 +1282,31 @@ def select_next_question(state: VaidyaArcState):
                     break
 
         if questions_for_complaint and next_field in questions_for_complaint:
-            next_question = questions_for_complaint[next_field]
+            fallback_question = questions_for_complaint[next_field]
         else:
-            next_question = DEFAULT_QUESTIONS.get(next_field, "Can you provide more information about this?")
+            fallback_question = DEFAULT_QUESTIONS.get(next_field, "Could you share a bit more about how your symptoms started?")
     else:
-        next_question = DEFAULT_QUESTIONS.get(next_field, "Can you provide more information?")
+        fallback_question = "Could you tell me what health concern or symptoms you are experiencing today?"
+
+    # 4. Try LLM adapter generate_next_question
+    candidate_question = None
+    try:
+        from app.llm_adapter import get_llm_adapter
+        adapter = get_llm_adapter()
+        candidate_question = adapter.generate_next_question(
+            current_message=state.get("current_message") or "",
+            known_info=known_info,
+            missing_info=missing,
+            target_field=next_field,
+            previous_question=state.get("conversation_message"),
+        )
+    except Exception:
+        candidate_question = None
+
+    if candidate_question and _validate_clinical_question(candidate_question, next_field, known_info):
+        next_question = candidate_question
+    else:
+        next_question = fallback_question
 
     updated_questions_asked = list(questions_asked) + [next_field]
 
@@ -1078,23 +1317,37 @@ def select_next_question(state: VaidyaArcState):
 
 
 def ask_next_question(state: VaidyaArcState):
+    closing_message = (
+        "Thank you. Your clinical intake and assessment are complete. "
+        "I have organized your details into a clinical summary for the doctor. "
+        "If there are any other things you want to describe to me as you wait, please feel free to go on with that."
+    )
+
+    conv_history = list(state.get("conversation_history") or [])
+    current_msg = state.get("current_message")
+    if current_msg and not any(entry.get("content") == current_msg and entry.get("role") == "patient" for entry in conv_history[-2:]):
+        conv_history.append({"role": "patient", "content": current_msg})
+
     if state.get("information_complete") and not (state.get("missing_information") or []):
         return {
-            "conversation_message": "Thank you. I have collected the initial information about your concern.",
+            "conversation_message": closing_message,
             "next_question": None,
-            "conversation_history": state.get("conversation_history", [])
+            "conversation_history": conv_history
         }
 
     question = state.get("next_question")
     if question:
+        conv_history.append({"role": "assistant", "content": question})
         return {
             "conversation_message": question,
-            "next_question": question
+            "next_question": question,
+            "conversation_history": conv_history
         }
 
     return {
-        "conversation_message": None,
-        "next_question": None
+        "conversation_message": closing_message,
+        "next_question": None,
+        "conversation_history": conv_history
     }
 
 
@@ -1469,18 +1722,15 @@ def evaluate_red_flags(state: VaidyaArcState):
 
     result = evaluate_red_flag_rules(state)
 
+    closing_message = (
+        "Thank you. Your clinical intake and assessment are complete. "
+        "I have organized your details into a clinical summary for the doctor. "
+        "If there are any other things you want to describe to me as you wait, please feel free to go on with that."
+    )
+
     completion_state = {
         "next_question": None,
-        "conversation_message": "Thank you. I have collected the initial information about your concern.",
-    }
-
-    return {
-        **completion_state,
-        "red_flag_status": result["red_flag_status"],
-        "red_flags": result["red_flags"],
-        "red_flag_evidence": result["red_flag_evidence"],
-        "immediate_attention_required": result["immediate_attention_required"],
-        "red_flag_rule_hits": result["red_flag_rule_hits"],
+        "conversation_message": closing_message,
     }
 
     return {

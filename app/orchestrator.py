@@ -82,8 +82,14 @@ def _build_initial_state_from_input(dto: NormalizedClinicalInputDTO) -> VaidyaAr
         "duration": None,
         "severity": None,
         "associated_symptoms": [],
+        "pertinent_negatives": [],
+        "past_history_notes": None,
+        "additional_patient_notes": None,
+        "intake_stage": "symptom_exploration",
         "missing_information": [],
         "information_complete": False,
+        "adaptive_question": None,
+        "is_complete": False,
         "questions_asked": [],
         "conversation_message": None,
         "next_question": None,
@@ -98,6 +104,8 @@ def _build_initial_state_from_input(dto: NormalizedClinicalInputDTO) -> VaidyaAr
         state["original_language"] = dto.message.original_language
         state["normalized_english"] = dto.message.english_text
         state["translation_provenance"] = dto.message.provenance
+        if dto.state_snapshot.get("information_complete"):
+            state["information_complete_snapshot"] = True
 
     return state
 
@@ -106,10 +114,36 @@ def evaluate_early_safety_check(state: VaidyaArcState) -> dict[str, Any]:
     """
     Executes authoritative Phase 2A red-flag evaluation on incoming state.
     Reuses app/red_flag_rules.py without duplicating any rules.
+    Also incorporates Tier 1 emergency precheck on incoming message for immediate short-circuiting.
     """
     eval_state = dict(state)
     eval_state["information_complete"] = True
-    return evaluate_red_flag_rules(eval_state)
+    base_result = dict(evaluate_red_flag_rules(eval_state))
+
+    from app.services.clinical_governance import tier1_emergency_precheck
+    msg = state.get("current_message") or ""
+    t1 = tier1_emergency_precheck(msg)
+    if t1:
+        rf_list = list(base_result.get("red_flags") or [])
+        if t1["red_flag"] not in rf_list:
+            rf_list.insert(0, t1["red_flag"])
+
+        ev_list = list(base_result.get("red_flag_evidence") or [])
+        if t1["trigger_phrase"] not in ev_list:
+            ev_list.insert(0, t1["trigger_phrase"])
+
+        hits = list(base_result.get("red_flag_rule_hits") or [])
+        hits.insert(0, {"rule_id": "TIER1_EMERGENCY", "red_flag": t1["red_flag"]})
+
+        base_result["red_flag_status"] = "red_flags_detected"
+        base_result["red_flags"] = rf_list
+        base_result["red_flag_evidence"] = ev_list
+        base_result["immediate_attention_required"] = True
+        base_result["red_flag_rule_hits"] = hits
+
+    return base_result
+
+
 
 
 def synthesize_clinical_output(state: VaidyaArcState) -> StructuredClinicalOutputDTO:
